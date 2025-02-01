@@ -1,0 +1,27 @@
+[project]
+name = "SigVarGen"
+version = "0.0.1"
+
+authors = [
+  { name="SigVarGen developers", email="ovakulenko@uwaterloo.ca" },
+]
+
+description = "Python library for generating signal variations."
+readme = "README.md"
+requires-python = ">=3.8"
+
+dependencies = [
+    "numpy>=1.24.3",
+    "scipy>=1.11.0"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+license = { file = "LICENSE.txt" }
+
+[project.urls]
+Homepage = "https://github.com/SigVarGen/SigVarGen"
+Issues = "https://github.com/pypa/sampleproject/issues"

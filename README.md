@@ -1,0 +1,1 @@
+Python library to generate multiple variants of the same event represented as time-series.
