@@ -1,6 +1,6 @@
 import numpy as np
 
-from sigvargen.noise.envelopes import *
+from SigVarGen.noise.envelopes import *
 
 #New ranges
 EMBEDDED_DEVICE_RANGES = {

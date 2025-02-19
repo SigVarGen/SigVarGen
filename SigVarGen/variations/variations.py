@@ -1,6 +1,6 @@
 import numpy as np
 
-from sigvargen.variations.transformations import *
+from SigVarGen.variations.transformations import *
 
 def generate_parameter_variations(param_sweeps, num_variants=5, window_size=1):
     """

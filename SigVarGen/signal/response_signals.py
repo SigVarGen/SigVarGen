@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from sigvargen.signal.signal_generation import generate_signal
+from SigVarGen.signal.signal_generation import generate_signal
 
 def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals, max_tries=1000):
     """
@@ -232,7 +232,7 @@ def add_main_interrupt(t, base_signal, domain, INTERRUPT_RANGES, temp, disperse,
 
 def add_smaller_interrupts(t, base_signal, INTERRUPT_RANGES, domain, temp, n_smaller_interrupts, occupied_intervals, disperse, drop, n_sinusoids=None, non_overlap=True):
     """
-    Add smaller secondary interrupts to the base signal.
+    Add secondary interrupts to the base signal.
     """
     interrupt_range = INTERRUPT_RANGES[domain]
     freq_range = interrupt_range['frequency'][temp] if temp != 0 else interrupt_range['frequency']
