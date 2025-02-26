@@ -5,11 +5,11 @@ from SigVarGen.noise.envelopes import *
 #New ranges
 EMBEDDED_DEVICE_RANGES = {
     'Arduino Board': {
-        'amplitude': (0, 4.5),  # Reduced amplitude (e.g., 0 to 1.5 V)
+        'amplitude': (0, 2),  # Reduced amplitude (e.g., 0 to 1.5 V)
         'frequency': (0, 10e3)  # in Hz
     },
     'Drones': {
-        'amplitude': (0, 0.65),  # Reduced amplitude
+        'amplitude': (0, 0.35),  # Reduced amplitude
         'frequency': {
             'control': (2.399e9, 2.401e9),  # in Hz
             'telemetry_low': (432.5e6, 433.5e6),  # in Hz
@@ -17,11 +17,11 @@ EMBEDDED_DEVICE_RANGES = {
         }
     },
     'Cameras': {
-        'amplitude': (0, 0.45),  # Reduced amplitude
+        'amplitude': (0, 0.35),  # Reduced amplitude
         'frequency': (24, 60)  # in Hz, as frames per second
     },
     'Smartphones': {
-        'amplitude': (0, 0.65),  # Reduced amplitude (Vrms)
+        'amplitude': (0, 0.35),  # Reduced amplitude (Vrms)
         'frequency': {
             'lte_low': (699.5e6, 700.5e6),  # in Hz
             'lte_high': (2.599e9, 2.601e9),  # in Hz
@@ -30,7 +30,7 @@ EMBEDDED_DEVICE_RANGES = {
         }
     },
     'Wi-Fi Routers': {
-        'amplitude': (0, 0.65),  # Reduced amplitude
+        'amplitude': (0, 0.35),  # Reduced amplitude
         'frequency': {
             'wifi_2_4ghz': (2.399e9, 2.401e9),  # in Hz
             'wifi_5ghz': (4.995e9, 5.005e9),    # in Hz
@@ -38,11 +38,11 @@ EMBEDDED_DEVICE_RANGES = {
         }
     },
     'Smart Watches': {
-        'amplitude': (0, 0.6e-3),  # Reduced amplitude
+        'amplitude': (0, 0.3e-3),  # Reduced amplitude
         'frequency': (2.399e9, 2.401e9)  # in Hz
     },
     'Home Automation Devices': {
-        'amplitude': (0, 0.45e-3),  # Reduced amplitude
+        'amplitude': (0, 0.35e-3),  # Reduced amplitude
         'frequency': {
             'zigbee': (2.399e9, 2.401e9),     # in Hz
             'z_wave_eu': (867.5e6, 868.5e6),  # in Hz
@@ -50,7 +50,7 @@ EMBEDDED_DEVICE_RANGES = {
         }
     },
     'Automotive Sensors': {
-        'amplitude': (0, 0.007),  # Reduced amplitude
+        'amplitude': (0, 0.003),  # Reduced amplitude
         'frequency': {
             'us': (314.5e6, 315.5e6),   # in Hz
             'eu': (432.5e6, 433.5e6)    # in Hz
@@ -66,7 +66,7 @@ EMBEDDED_DEVICE_INTERRUPTS = {
         'frequency': (0, 12e3)  # Increased upper frequency limit
     },
     'Drones': {
-        'amplitude': (0.6, 1),  # Increased amplitude
+        'amplitude': (0, 1),  # Increased amplitude
         'frequency': {
             'control': (2.398e9, 2.402e9),      # Expanded frequency range
             'telemetry_low': (432e6, 434e6),    # Expanded frequency range

@@ -46,11 +46,24 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
 
     signal = np.zeros_like(t)
     sinusoids_params = []
+
+    # Generate and sum sinusoids
     for _ in range(n_sinusoids):
-        amp = (1/n_sinusoids) * np.random.uniform(amplitude_range[0], amplitude_range[1])
+        amp = np.random.uniform(amplitude_range[0], amplitude_range[1])
         freq = np.random.uniform(*frequency_range)
         phase = np.random.uniform(0, 2 * np.pi)
         sinusoid = amp * np.sin(2 * np.pi * freq * t + phase)
         signal += sinusoid
         sinusoids_params.append({'amp': amp, 'freq': freq, 'phase': phase})
+
+    # Normalize signal to range [-1, 1]
+    signal -= np.mean(signal)  # Remove DC offset
+    max_abs_value = np.max(np.abs(signal))
+    if max_abs_value > 0:
+        signal /= max_abs_value  # Normalize to [-1, 1]
+
+    # Rescale signal to be within the exact amplitude range [A_min, A_max]
+    A_min, A_max = amplitude_range
+    signal = ((signal + 1) / 2) * (A_max - A_min) + A_min
+
     return signal, sinusoids_params
