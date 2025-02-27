@@ -120,31 +120,30 @@ def apply_interrupt_modifications(
         The computed offset value.
     """
 
+    #NOTE: need to change offset logic to first normalize offset mean towards base mean
+
     if disperse:
         if not drop:
             allowed_drift = device_max - np.max(inter_part)
             allowed_drift = max(allowed_drift, 0)
-            min_drift = 0
+            min_drift = np.max(inter_part)
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='up', min_drift=min_drift)
         else:
             allowed_drift = np.min(inter_part) - device_min
             allowed_drift = max(allowed_drift, 0)
-            min_drift = 0
+            min_drift = device_min
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='down', min_drift=min_drift)
 
     # Find min/max of base_part & inter_part
     B_min, B_max = np.min(base_part), np.max(base_part)
     I_min, I_max = np.min(inter_part), np.max(inter_part)
 
-    # Solve for offset range
     sign = -1 if drop else +1
 
-    # Minimum constraint => blend_factor*(B_min + I_min + sign*offset) >= device_min * 2
-    #offset_min_constraint = (2*device_min - (B_min + I_min)) / sign
+    # Minimum constraint 
     offset_min_constraint = sign * (device_min - blend_factor * B_min - (1 - blend_factor) * I_min) / (1 - blend_factor)
 
-    # Maximum constraint => blend_factor*(B_max + I_max + sign*offset) <= device_max * 2
-    #offset_max_constraint = (2*device_max - (B_max + I_max)) / sign
+    # Maximum constraint 
     offset_max_constraint = sign * (device_max - blend_factor * B_max - (1 - blend_factor) * I_max) / (1 - blend_factor)
 
     # The actual offset range depends on sign:
@@ -170,7 +169,7 @@ def apply_interrupt_modifications(
     else:
         inter_part += offset
 
-    print(f"Offset applied: {offset}, Max Drift: {allowed_drift}")
+    #print(f"Offset applied: {offset}, Max Drift: {allowed_drift}")
     return inter_part, offset
 
 def generate_main_interrupt(
@@ -252,7 +251,8 @@ def add_main_interrupt(
     drop=False,
     n_sinusoids=None,
     non_overlap=True,
-    complex_iter=0
+    complex_iter=0,
+    blend_factor=0.5
 ):
     """
     Orchestrate the process of adding a main interrupt to the base signal,
@@ -295,7 +295,7 @@ def add_main_interrupt(
     )
 
     # Blend signal parts
-    base_signal[start_idx:end_idx] = blend_signal(base_slice, inter_part_modified)
+    base_signal[start_idx:end_idx] = blend_signal(base_slice, inter_part_modified, blend=blend_factor)
 
     # Prepare metadata
     interrupt_params = [{
@@ -310,50 +310,117 @@ def add_main_interrupt(
 
     # === Add smaller overlapping interrupts if complex_iter > 0 ===
     for _ in range(complex_iter):
-        # example logic for overlap
-        start_idx2 = random.randint(start_idx, end_idx)
-        max_small_len = (end_idx - start_idx) // 3
-        min_small_len = (end_idx - start_idx) // 5
-        duration2 = random.randint(min_small_len, max_small_len)
-        end_idx2 = min(start_idx2 + duration2, end_idx)
-
-        # Re-slice
-        base_slice2 = base_signal[start_idx2:end_idx2]
-        inter_part2_raw = main_interrupt_signal[start_idx2:end_idx2]
-
-        print("2", start_idx2, end_idx2)
-
-        # Example offset scaling
-        offset2 = random.uniform(offset_val, offset_val * 1.4)
-
-        print("2", offset_val, offset2)
-
-        # Possibly apply a separate drift or offset logic:
-        inter_part2 = apply_baseline_drift_middle_peak(
-            inter_part2_raw.copy(),
-            max_drift=4,
-            min_drift=1,
-            direction='up'
+        base_signal, complex_param = add_complexity_to_inter(
+            base_signal=base_signal,
+            full_interrupt_signal=main_interrupt_signal,
+            start_main=start_idx,
+            end_main=end_idx,
+            domain=domain,
+            INTERRUPT_RANGES=INTERRUPT_RANGES,
+            drop=drop,
+            old_offset=offset_val,  
+            sinusoids_params=interrupt_sinusoids_params,
+            blend_factor=blend_factor
         )
-        # Then apply offset sign
-        if drop:
-            inter_part2 -= offset2
-        else:
-            inter_part2 += offset2
-
-        # Combine (add, or you might want to do another 0.5 blend)
-        base_signal[start_idx2:end_idx2] += inter_part2
-
-        interrupt_params.append({
-            'start_idx': start_idx2,
-            'duration_idx': end_idx2 - start_idx2,
-            'offset': offset2,
-            'sinusoids_params': interrupt_sinusoids_params,
-            'type': 'main_overlapping'
-        })
+        interrupt_params.append(complex_param)
+        
 
     return base_signal, interrupt_params, occupied_intervals
 
+def add_complexity_to_inter(
+    base_signal,
+    full_interrupt_signal,
+    start_main,
+    end_main,
+    domain,
+    INTERRUPT_RANGES,
+    drop,
+    old_offset,
+    sinusoids_params,
+    blend_factor=0.5
+):
+    """
+    Adds one 'complex' (overlapping) interrupt within the main interrupt region.
+
+    Parameters
+    ----------
+    base_signal : np.ndarray
+        The overall base signal, which may already have the main interrupt added.
+    full_interrupt_signal : np.ndarray
+        The full-length interrupt wave from which we slice a portion.
+    start_main : int
+        Start index of the main interrupt.
+    end_main : int
+        End index of the main interrupt.
+    domain : str
+        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
+    INTERRUPT_RANGES : dict
+        Contains amplitude/frequency info for each domain.
+    drop : bool
+        If True => subtract offset, else add offset.
+    old_offset : float
+        The main offset used; we might scale from that or do something different.
+    sinusoids_params : dict or list
+        The metadata describing how the main interrupt was generated (reuse if you want).
+    blend_factor : float, optional
+        Weighting for final combination (default=0.5).
+    
+    Returns
+    -------
+    updated_base_signal : np.ndarray
+        The base signal after adding the new overlapping interrupt.
+    interrupt_params : dict
+        Metadata describing the smaller interrupt that was added.
+    """
+    length_main = end_main - start_main
+    if length_main <= 1:
+        # No room to add a complex interrupt
+        return base_signal, {}
+
+    min_small_len = max(1, length_main // 5)
+    max_small_len = max(1, length_main // 3)
+    start_idx2 = random.randint(start_main, end_main)
+    duration2 = random.randint(min_small_len, max_small_len)
+    end_idx2 = min(start_idx2 + duration2, end_main)
+
+    # 2) Slice out the portion from the updated base signal and the full interrupt wave
+    base_slice2 = base_signal[start_idx2:end_idx2]
+    inter_part2_raw = full_interrupt_signal[start_idx2:end_idx2]
+
+    #final_offset2 = random.uniform(old_offset, 1.4 * old_offset)
+
+    # 4) Optionally apply drift + offset with bounding logic
+    inter_part2_modified, final_offset2 = apply_interrupt_modifications(
+        inter_part=inter_part2_raw.copy(),
+        base_part=base_slice2.copy(),
+        device_min=INTERRUPT_RANGES[domain]['amplitude'][0],
+        device_max=INTERRUPT_RANGES[domain]['amplitude'][1],
+        drop=drop,
+        disperse=False,       # Maybe always disperse for complex interrupts?
+        blend_factor=blend_factor
+    )
+
+    # 5) Combine with the base signal
+    updated_slice2 = blend_signal(base_slice2, inter_part2_modified, blend=blend_factor)
+
+    # 6) Check final bounding and clamp if you want to avoid any small overshoot:
+    #updated_slice2 = np.clip(updated_slice2,
+    #                         INTERRUPT_RANGES[domain]['amplitude'][0],
+    #                         INTERRUPT_RANGES[domain]['amplitude'][1])
+
+    # Write the updated slice back
+    base_signal[start_idx2:end_idx2] = updated_slice2
+
+    
+    interrupt_params = {
+        'start_idx': start_idx2,
+        'duration_idx': end_idx2 - start_idx2,
+        'offset': final_offset2,  # or offset2_raw if you used that
+        'sinusoids_params': sinusoids_params,
+        'type': 'main_overlapping'
+    }
+
+    return base_signal, interrupt_params
 
 def add_smaller_interrupts(
     t,
@@ -383,7 +450,7 @@ def add_smaller_interrupts(
             INTERRUPT_RANGES,
             temp,
             n_sinusoids=n_sinusoids,
-            amplitude_scale=0.8,  # e.g. smaller amplitude
+            amplitude_scale=0.8,
             frequency_scale=1.0
         )
 
@@ -405,7 +472,7 @@ def add_smaller_interrupts(
             drop=drop,
             device_min=INTERRUPT_RANGES[domain]['amplitude'][0],
             device_max=INTERRUPT_RANGES[domain]['amplitude'][1],
-            disperse=disperse # for example
+            disperse=disperse
         )
 
         # 5) Combine
