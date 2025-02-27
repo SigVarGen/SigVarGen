@@ -285,6 +285,10 @@ def add_main_interrupt(
 
     # Apply modifications (offset, drift)
     base_slice = base_signal[start_idx:end_idx]
+
+    if base_slice.size == 0 or inter_part_raw.size == 0:
+        return base_signal, [], occupied_intervals
+
     inter_part_modified, offset_val = apply_interrupt_modifications(
         inter_part=inter_part_raw.copy(),
         base_part=base_slice.copy(),
@@ -386,6 +390,9 @@ def add_complexity_to_inter(
     # 2) Slice out the portion from the updated base signal and the full interrupt wave
     base_slice2 = base_signal[start_idx2:end_idx2]
     inter_part2_raw = full_interrupt_signal[start_idx2:end_idx2]
+
+    if base_slice2.size == 0 or inter_part2_raw.size == 0:
+        return base_signal, []
 
     #final_offset2 = random.uniform(old_offset, 1.4 * old_offset)
 
