@@ -95,19 +95,48 @@ def apply_interrupt_modifications(
     inter_part, base_part, device_min, device_max, drop, disperse=False, blend_factor=0.5
 ):
     """
-    inter_part: slice of the interrupt wave
-    base_part: slice of the base wave
-    device_min, device_max: final amplitude constraints
-    drop: if True => subtract offset, else add offset
-    blend_factor: how you combine the two signals, default 0.5 each
+    Modifies the interrupt signal by applying an offset and optional baseline drift.
+
+    Parameters:
+    ----------
+    inter_part : np.ndarray
+        Slice of the interrupt wave.
+    base_part : np.ndarray
+        Corresponding slice of the base wave (used to calculate valid offset).
+    device_min, device_max : float
+        Amplitude constraints of the device.
+    drop : bool
+        If True, subtract offset; otherwise, add offset.
+    disperse : bool, optional
+        If True, applies baseline drift (default=False).
+    blend_factor : float, optional
+        How much of base and interrupt to mix (default=0.5).
+
+    Returns:
+    -------
+    inter_part : np.ndarray
+        The modified interrupt signal.
+    offset : float
+        The computed offset value.
     """
 
-    # 1) Find min/max of base_part & inter_part
+    if disperse:
+        if not drop:
+            allowed_drift = device_max - np.max(inter_part)
+            allowed_drift = max(allowed_drift, 0)
+            min_drift = 0
+            inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='up', min_drift=min_drift)
+        else:
+            allowed_drift = np.min(inter_part) - device_min
+            allowed_drift = max(allowed_drift, 0)
+            min_drift = 0
+            inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='down', min_drift=min_drift)
+
+    # Find min/max of base_part & inter_part
     B_min, B_max = np.min(base_part), np.max(base_part)
     I_min, I_max = np.min(inter_part), np.max(inter_part)
 
-    # 2) Solve for offset range
-    # -- sign is -1 if drop else +1
+    # Solve for offset range
     sign = -1 if drop else +1
 
     # Minimum constraint => blend_factor*(B_min + I_min + sign*offset) >= device_min * 2
@@ -116,10 +145,7 @@ def apply_interrupt_modifications(
 
     # Maximum constraint => blend_factor*(B_max + I_max + sign*offset) <= device_max * 2
     #offset_max_constraint = (2*device_max - (B_max + I_max)) / sign
-    offset_max_constraint = sign * (device_min - blend_factor * B_max - (1 - blend_factor) * I_max) / (1 - blend_factor)
-
-    # Because we used 0.5 outside, effectively we consider them "doubled" in the equations:
-    # If your real formula is strictly 0.5*( B + I +/- offset ), adapt accordingly.
+    offset_max_constraint = sign * (device_max - blend_factor * B_max - (1 - blend_factor) * I_max) / (1 - blend_factor)
 
     # The actual offset range depends on sign:
     if sign > 0:
@@ -138,12 +164,13 @@ def apply_interrupt_modifications(
         # 3) Choose an offset in that feasible range
         offset = random.uniform(offset_lower, offset_upper)
 
-    # 4) Apply offset
+    # Apply offset
     if drop:
         inter_part -= offset
     else:
         inter_part += offset
 
+    print(f"Offset applied: {offset}, Max Drift: {allowed_drift}")
     return inter_part, offset
 
 def generate_main_interrupt(
@@ -231,7 +258,7 @@ def add_main_interrupt(
     Orchestrate the process of adding a main interrupt to the base signal,
     plus optional smaller overlapping interruptions.
     """
-    # 1) Generate the main interrupt signal (raw)
+    # Generate the main interrupt signal (raw)
     main_interrupt_signal, interrupt_sinusoids_params = generate_main_interrupt(
         t=t,
         domain=domain,
@@ -240,7 +267,7 @@ def add_main_interrupt(
         n_sinusoids=n_sinusoids,
     )
 
-    # 2) Determine where to place
+    # Determine where to place
     occupied_intervals = []
     start_idx, end_idx = place_interrupt(
         len(t),
@@ -253,11 +280,10 @@ def add_main_interrupt(
     if start_idx is None:
         return base_signal, [], occupied_intervals
 
-    # 3) Slice out the portion of the main interrupt
+    # Slice out the portion of the main interrupt
     inter_part_raw = main_interrupt_signal[start_idx:end_idx]
 
-    # 4) Apply modifications (offset, drift)
-    #    Provide the corresponding base slice so we can compute amplitude diff
+    # Apply modifications (offset, drift)
     base_slice = base_signal[start_idx:end_idx]
     inter_part_modified, offset_val = apply_interrupt_modifications(
         inter_part=inter_part_raw.copy(),
@@ -266,13 +292,12 @@ def add_main_interrupt(
         device_max=INTERRUPT_RANGES[domain]['amplitude'][1],
         drop=drop,
         disperse=disperse
-        # you can pass drift_func, drift_kwargs if needed
     )
 
-    # 5) Blend (if you want a 0.5 factor) or simply replace / add
+    # Blend signal parts
     base_signal[start_idx:end_idx] = blend_signal(base_slice, inter_part_modified)
 
-    # 6) Prepare metadata
+    # Prepare metadata
     interrupt_params = [{
         'start_idx': start_idx,
         'duration_idx': end_idx - start_idx,
@@ -296,14 +321,19 @@ def add_main_interrupt(
         base_slice2 = base_signal[start_idx2:end_idx2]
         inter_part2_raw = main_interrupt_signal[start_idx2:end_idx2]
 
+        print("2", start_idx2, end_idx2)
+
         # Example offset scaling
         offset2 = random.uniform(offset_val, offset_val * 1.4)
+
+        print("2", offset_val, offset2)
 
         # Possibly apply a separate drift or offset logic:
         inter_part2 = apply_baseline_drift_middle_peak(
             inter_part2_raw.copy(),
-            max_drift=80,
-            min_drift=10
+            max_drift=4,
+            min_drift=1,
+            direction='up'
         )
         # Then apply offset sign
         if drop:
@@ -433,7 +463,7 @@ def add_interrupt_with_params(t, base_signal, domain, INTERRUPT_RANGES, temp, dr
         duration_ratio = random.uniform(0.06, 0.12)
 
     base_signal, main_interrupt_params, occupied_intervals = add_main_interrupt(
-        t, base_signal, domain, INTERRUPT_RANGES, temp, duration_ratio, n_sinusoids=n_sinusoids, disperse=disperse, drop=drop, non_overlap=non_overlap, complex_iter=0
+        t, base_signal, domain, INTERRUPT_RANGES, temp, duration_ratio, n_sinusoids=n_sinusoids, disperse=disperse, drop=drop, non_overlap=non_overlap, complex_iter=complex_iter
     )
 
     if n_smaller_interrupts is None:
