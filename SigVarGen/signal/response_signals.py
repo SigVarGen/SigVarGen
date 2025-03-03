@@ -94,32 +94,6 @@ def blend_signal(base_slice, interrupt_slice, blend=0.5):
 def apply_interrupt_modifications(
     inter_part, base_part, device_min, device_max, drop, disperse=False, blend_factor=0.5
 ):
-    """
-    Modifies the interrupt signal by applying an offset and optional baseline drift.
-
-    Parameters:
-    ----------
-    inter_part : np.ndarray
-        Slice of the interrupt wave.
-    base_part : np.ndarray
-        Corresponding slice of the base wave (used to calculate valid offset).
-    device_min, device_max : float
-        Amplitude constraints of the device.
-    drop : bool
-        If True, subtract offset; otherwise, add offset.
-    disperse : bool, optional
-        If True, applies baseline drift (default=False).
-    blend_factor : float, optional
-        How much of base and interrupt to mix (default=0.5).
-
-    Returns:
-    -------
-    inter_part : np.ndarray
-        The modified interrupt signal.
-    offset : float
-        The computed offset value.
-    """
-
     if disperse:
         if not drop:
             allowed_drift = device_max - np.max(inter_part)
@@ -132,33 +106,25 @@ def apply_interrupt_modifications(
             min_drift = device_min
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='down', min_drift=min_drift)
 
-    # Find min/max of base_part & inter_part
-    B_min, B_max = np.min(base_part), np.max(base_part)
+    # Compute the current interrupt range
     I_min, I_max = np.min(inter_part), np.max(inter_part)
 
-    sign = -1 if drop else +1
-
-    # Minimum constraint 
-    offset_min_constraint = sign * (device_min - blend_factor * B_min - (1 - blend_factor) * I_min) / (1 - blend_factor)
-
-    # Maximum constraint 
-    offset_max_constraint = sign * (device_max - blend_factor * B_max - (1 - blend_factor) * I_max) / (1 - blend_factor)
-
-    # The actual offset range depends on sign:
-    if sign > 0:
-        offset_lower = offset_min_constraint
-        offset_upper = offset_max_constraint
+    # Calculate available offset space to fit within device bounds
+    if drop:
+        # Drop = shift down
+        max_offset = I_min - device_min
+        min_offset = I_max - device_min  # Keep full interrupt within bounds
+        offset_lower, offset_upper = -max_offset, -min_offset
     else:
-        # sign < 0 => the inequalities flip
-        offset_lower = offset_max_constraint
-        offset_upper = offset_min_constraint
+        # Rise = shift up
+        max_offset = device_max - I_max
+        min_offset = device_max - I_min  # Keep full interrupt within bounds
+        offset_lower, offset_upper = min_offset, max_offset
 
-    # Ensure offset_lower <= offset_upper
+    # If something is weird (numerical instability), be safe
     if offset_lower > offset_upper:
-        # No feasible offset, do something safe:
         offset = 0.0
     else:
-        # 3) Choose an offset in that feasible range
         offset = random.uniform(offset_lower, offset_upper)
 
     # Apply offset
@@ -167,8 +133,8 @@ def apply_interrupt_modifications(
     else:
         inter_part += offset
 
-    #print(f"Offset applied: {offset}, Max Drift: {allowed_drift}")
     return inter_part, offset
+
 
 def generate_main_interrupt(
     t,
@@ -503,7 +469,9 @@ def add_smaller_interrupts(
 
 
 
-def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, n_sinusoids=None, non_overlap=True, complex_iter=0):
+def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, 
+                            temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, 
+                            n_sinusoids=None, non_overlap=True, complex_iter=0, blend_factor=0.5):
     """
     Add one main interrupt and between 0 to 2 smaller interrupts (non-overlapping) to the signal.
 
@@ -539,8 +507,20 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
         duration_ratio = random.uniform(0.06, 0.12)
 
     base_signal, main_interrupt_params, occupied_intervals = add_main_interrupt(
-        t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, temp, duration_ratio, n_sinusoids=n_sinusoids, disperse=disperse, drop=drop, non_overlap=non_overlap, complex_iter=complex_iter
-    )
+                t=t,                               
+                base_signal=base_signal,            
+                domain=domain,                      
+                DEVICE_RANGES=DEVICE_RANGES,        
+                INTERRUPT_RANGES=INTERRUPT_RANGES,  
+                temp=temp,                          
+                duration_ratio=duration_ratio,      
+                disperse=disperse,                  
+                drop=drop,                          
+                n_sinusoids=n_sinusoids,            
+                non_overlap=non_overlap,            
+                complex_iter=complex_iter,         
+                blend_factor=blend_factor)
+
 
     if n_smaller_interrupts is None:
         n_smaller_interrupts = random.randint(0, 2)
@@ -548,8 +528,18 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
     small_duration_ratio = random.uniform(0.01*duration_ratio, 0.9*duration_ratio)
 
     base_signal, small_interrupt_params = add_smaller_interrupts(
-        t, base_signal, INTERRUPT_RANGES, domain, temp, n_smaller_interrupts, occupied_intervals, disperse, drop, small_duration_ratio, n_sinusoids=n_sinusoids, non_overlap=non_overlap
-    )
+               t=t,
+                base_signal=base_signal,
+                INTERRUPT_RANGES=INTERRUPT_RANGES,
+                domain=domain,
+                temp=temp,
+                n_smaller_interrupts=n_smaller_interrupts,
+                occupied_intervals=occupied_intervals,
+                disperse=disperse,
+                drop=drop,
+                small_duration_ratio=small_duration_ratio,
+                n_sinusoids=n_sinusoids,
+                non_overlap=non_overlap)
 
     return base_signal, main_interrupt_params + small_interrupt_params
 
