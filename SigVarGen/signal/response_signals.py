@@ -217,7 +217,9 @@ def add_main_interrupt(
     n_sinusoids=None,
     non_overlap=True,
     complex_iter=0,
-    blend_factor=0.5
+    blend_factor=0.5,
+    shrink_complex=False,
+    shrink_factor=0.9
 ):
     """
     Orchestrate the process of adding a main interrupt to the base signal,
@@ -278,17 +280,29 @@ def add_main_interrupt(
     occupied_intervals.append((start_idx, end_idx))
 
     # === Add smaller overlapping interrupts if complex_iter > 0 ===
+
+    current_start = start_idx
+    current_end = end_idx
+    current_duration = end_idx - start_idx
+
     for _ in range(complex_iter):
+        if shrink_complex:
+            current_duration = max(1, int(current_duration * shrink_factor))
+
+        # Place the next complex interrupt within the original main interrupt region
+        complex_start = random.randint(current_start, current_end - current_duration)
+        complex_end = complex_start + current_duration
+
         base_signal, complex_param = add_complexity_to_inter(
             base_signal=base_signal,
             full_interrupt_signal=main_interrupt_signal,
-            start_main=start_idx,
-            end_main=end_idx,
+            start_main=complex_start,
+            end_main=complex_end,
             domain=domain,
             DEVICE_RANGES=DEVICE_RANGES,
             INTERRUPT_RANGES=INTERRUPT_RANGES,
             drop=drop,
-            old_offset=offset_val,  
+            old_offset=offset_val,
             sinusoids_params=interrupt_sinusoids_params,
             blend_factor=blend_factor
         )
@@ -471,7 +485,8 @@ def add_smaller_interrupts(
 
 def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, 
                             temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, 
-                            n_sinusoids=None, non_overlap=True, complex_iter=0, blend_factor=0.5):
+                            n_sinusoids=None, non_overlap=True, complex_iter=0, blend_factor=0.5, 
+                            shrink_complex=False, shrink_factor=0.9):
     """
     Add one main interrupt and between 0 to 2 smaller interrupts (non-overlapping) to the signal.
 
@@ -519,7 +534,9 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
                 n_sinusoids=n_sinusoids,            
                 non_overlap=non_overlap,            
                 complex_iter=complex_iter,         
-                blend_factor=blend_factor)
+                blend_factor=blend_factor,
+                shrink_complex=shrink_complex,
+                shrink_factor=shrink_factor)
 
 
     if n_smaller_interrupts is None:
