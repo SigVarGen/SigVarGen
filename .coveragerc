@@ -1,0 +1,13 @@
+[run]
+source = SigVarGen
+branch = True
+omit =
+    SigVarGen/__init__.py
+    SigVarGen/noise/__init__.py
+    SigVarGen/signal/__init__.py
+    SigVarGen/variations/__init__.py
+    SigVarGen/config.py
+    SigVarGen/config_hardcoded.py
+
+[report]
+show_missing = True

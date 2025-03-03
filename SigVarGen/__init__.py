@@ -1,5 +1,3 @@
-#print("Initializing SigVarGen package...")
-
 from .noise import *
 from .signal import *
 from .variations import *
@@ -24,10 +22,5 @@ __all__ = ['noise', 'signal', 'variations'
             'apply_nonlinear_distortion', 'apply_quantization_noise',
             'EMBEDDED_DEVICE_RANGES', 'EMBEDDED_DEVICE_INTERRUPTS', 'param_sweeps',
             'noise_funcs', 'npw_levels', 'mf_levels',
-            'calculate_CP', 'euclidean_distance', 'interpoling', 'normalization',
+            'calculate_CP', 'calculate_ED', 'interpoling', 'normalization',
             'generate_device_parameters']
-
-#from . import noise
-#from . import signal
-#from . import variations
-
