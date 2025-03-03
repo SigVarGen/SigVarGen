@@ -120,8 +120,6 @@ def apply_interrupt_modifications(
         The computed offset value.
     """
 
-    #NOTE: need to change offset logic to first normalize offset mean towards base mean
-
     if disperse:
         if not drop:
             allowed_drift = device_max - np.max(inter_part)
@@ -244,6 +242,7 @@ def add_main_interrupt(
     t,
     base_signal,
     domain,
+    DEVICE_RANGES,
     INTERRUPT_RANGES,
     temp,
     duration_ratio,
@@ -292,8 +291,8 @@ def add_main_interrupt(
     inter_part_modified, offset_val = apply_interrupt_modifications(
         inter_part=inter_part_raw.copy(),
         base_part=base_slice.copy(),
-        device_min=INTERRUPT_RANGES[domain]['amplitude'][0],
-        device_max=INTERRUPT_RANGES[domain]['amplitude'][1],
+        device_min=min(INTERRUPT_RANGES[domain]['amplitude'][0], DEVICE_RANGES[domain]['amplitude'][0]),
+        device_max=max(INTERRUPT_RANGES[domain]['amplitude'][1], DEVICE_RANGES[domain]['amplitude'][1]),
         drop=drop,
         disperse=disperse
     )
@@ -320,6 +319,7 @@ def add_main_interrupt(
             start_main=start_idx,
             end_main=end_idx,
             domain=domain,
+            DEVICE_RANGES=DEVICE_RANGES,
             INTERRUPT_RANGES=INTERRUPT_RANGES,
             drop=drop,
             old_offset=offset_val,  
@@ -337,6 +337,7 @@ def add_complexity_to_inter(
     start_main,
     end_main,
     domain,
+    DEVICE_RANGES,
     INTERRUPT_RANGES,
     drop,
     old_offset,
@@ -400,8 +401,8 @@ def add_complexity_to_inter(
     inter_part2_modified, final_offset2 = apply_interrupt_modifications(
         inter_part=inter_part2_raw.copy(),
         base_part=base_slice2.copy(),
-        device_min=INTERRUPT_RANGES[domain]['amplitude'][0],
-        device_max=INTERRUPT_RANGES[domain]['amplitude'][1],
+        device_min=min(INTERRUPT_RANGES[domain]['amplitude'][0], DEVICE_RANGES[domain]['amplitude'][0]),
+        device_max=max(INTERRUPT_RANGES[domain]['amplitude'][1], DEVICE_RANGES[domain]['amplitude'][1]),
         drop=drop,
         disperse=False,       # Maybe always disperse for complex interrupts?
         blend_factor=blend_factor
@@ -450,14 +451,15 @@ def add_smaller_interrupts(
     interrupt_params = []
 
     for _ in range(n_smaller_interrupts):
-        # 1) Generate or reuse the same generator but with amplitude scale
+        
+        # 3) Generate interrupt signal
         small_interrupt_signal, small_sinusoids_params = generate_main_interrupt(
             t,
             domain,
             INTERRUPT_RANGES,
             temp,
             n_sinusoids=n_sinusoids,
-            amplitude_scale=0.8,
+            amplitude_scale=1.0,
             frequency_scale=1.0
         )
 
@@ -501,7 +503,7 @@ def add_smaller_interrupts(
 
 
 
-def add_interrupt_with_params(t, base_signal, domain, INTERRUPT_RANGES, temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, n_sinusoids=None, non_overlap=True, complex_iter=0):
+def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, n_sinusoids=None, non_overlap=True, complex_iter=0):
     """
     Add one main interrupt and between 0 to 2 smaller interrupts (non-overlapping) to the signal.
 
@@ -537,7 +539,7 @@ def add_interrupt_with_params(t, base_signal, domain, INTERRUPT_RANGES, temp, dr
         duration_ratio = random.uniform(0.06, 0.12)
 
     base_signal, main_interrupt_params, occupied_intervals = add_main_interrupt(
-        t, base_signal, domain, INTERRUPT_RANGES, temp, duration_ratio, n_sinusoids=n_sinusoids, disperse=disperse, drop=drop, non_overlap=non_overlap, complex_iter=complex_iter
+        t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, temp, duration_ratio, n_sinusoids=n_sinusoids, disperse=disperse, drop=drop, non_overlap=non_overlap, complex_iter=complex_iter
     )
 
     if n_smaller_interrupts is None:

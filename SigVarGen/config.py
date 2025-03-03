@@ -2,115 +2,57 @@ import numpy as np
 
 from SigVarGen.noise.envelopes import *
 
-#New ranges
 EMBEDDED_DEVICE_RANGES = {
     'Arduino Board': {
-        'amplitude': (0, 2),  # Reduced amplitude (e.g., 0 to 1.5 V)
-        'frequency': (0, 10e3)  # in Hz
+        'amplitude': (0, 5),  # V
+        'frequency': (0, 12e3)  # Hz
     },
     'Drones': {
-        'amplitude': (0, 0.35),  # Reduced amplitude
+        'amplitude': (0, 1),  # V
         'frequency': {
-            'control': (2.399e9, 2.401e9),  # in Hz
-            'telemetry_low': (432.5e6, 433.5e6),  # in Hz
-            'telemetry_high': (2.4e9, 5.8e9)  # in Hz
+            'control': (2.398e9, 2.402e9),  # Hz
+            'telemetry_low': (432e6, 434e6),  # Hz
+            'telemetry_high': (2.39e9, 5.9e9)  # Hz
         }
     },
     'Cameras': {
-        'amplitude': (0, 0.35),  # Reduced amplitude
-        'frequency': (24, 60)  # in Hz, as frames per second
+        'amplitude': (0, 1),  # V
+        'frequency': (24, 120)  # Hz, as frames per second
     },
     'Smartphones': {
-        'amplitude': (0, 0.35),  # Reduced amplitude (Vrms)
+        'amplitude': (0, 1),  # Vrms
         'frequency': {
-            'lte_low': (699.5e6, 700.5e6),  # in Hz
-            'lte_high': (2.599e9, 2.601e9),  # in Hz
-            '5g_low': (599.5e6, 600.5e6),  # in Hz
-            '5g_high': (38.95e9, 39.05e9)  # in Hz
+            'lte_low': (699e6, 701e6),  # Hz
+            'lte_high': (2.598e9, 2.602e9),  # Hz
+            '5g_low': (599e6, 601e6),  # Hz
+            '5g_high': (38.9e9, 39.1e9)  # Hz
         }
     },
     'Wi-Fi Routers': {
-        'amplitude': (0, 0.35),  # Reduced amplitude
+        'amplitude': (0, 1),  # V
         'frequency': {
-            'wifi_2_4ghz': (2.399e9, 2.401e9),  # in Hz
-            'wifi_5ghz': (4.995e9, 5.005e9),    # in Hz
-            'wifi_6ghz': (5.995e9, 6.005e9)     # in Hz
+            'wifi_2_4ghz': (2.395e9, 2.405e9),  # Hz
+            'wifi_5ghz': (4.990e9, 5.010e9),  # Hz
+            'wifi_6ghz': (5.990e9, 6.010e9)  # Hz
         }
     },
     'Smart Watches': {
-        'amplitude': (0, 0.3e-3),  # Reduced amplitude
-        'frequency': (2.399e9, 2.401e9)  # in Hz
+        'amplitude': (0, 0.9e-3),  # V
+        'frequency': (2.398e9, 2.402e9)  # Hz
     },
     'Home Automation Devices': {
-        'amplitude': (0, 0.35e-3),  # Reduced amplitude
+        'amplitude': (0, 0.9e-3),  # V
         'frequency': {
-            'zigbee': (2.399e9, 2.401e9),     # in Hz
-            'z_wave_eu': (867.5e6, 868.5e6),  # in Hz
-            'z_wave_us': (907.5e6, 908.5e6)   # in Hz
+            'zigbee': (2.398e9, 2.402e9),  # Hz
+            'z_wave_eu': (867e6, 869e6),  # Hz
+            'z_wave_us': (907e6, 909e6)  # Hz
         }
     },
     'Automotive Sensors': {
-        'amplitude': (0, 0.003),  # Reduced amplitude
+        'amplitude': (0, 0.01),  # V
         'frequency': {
-            'us': (314.5e6, 315.5e6),   # in Hz
-            'eu': (432.5e6, 433.5e6)    # in Hz
-        }
-    }
-}
-
-
-
-EMBEDDED_DEVICE_INTERRUPTS = {
-    'Arduino Board': {
-        'amplitude': (0, 5),  # Increased amplitude (2-3 times higher)
-        'frequency': (0, 12e3)  # Increased upper frequency limit
-    },
-    'Drones': {
-        'amplitude': (0, 1),  # Increased amplitude
-        'frequency': {
-            'control': (2.398e9, 2.402e9),      # Expanded frequency range
-            'telemetry_low': (432e6, 434e6),    # Expanded frequency range
-            'telemetry_high': (2.39e9, 5.9e9)   # Expanded frequency range
-        }
-    },
-    'Cameras': {
-        'amplitude': (0, 1),  # Increased amplitude
-        'frequency': (24, 120)  # Increased upper frame rate limit
-    },
-    'Smartphones': {
-        'amplitude': (0, 1),  # Increased amplitude (Vrms)
-        'frequency': {
-            'lte_low': (699e6, 701e6),      # Expanded frequency range
-            'lte_high': (2.598e9, 2.602e9), # Expanded frequency range
-            '5g_low': (599e6, 601e6),       # Expanded frequency range
-            '5g_high': (38.9e9, 39.1e9)     # Expanded frequency range
-        }
-    },
-    'Wi-Fi Routers': {
-        'amplitude': (0, 1),  # Increased amplitude
-        'frequency': {
-            'wifi_2_4ghz': (2.395e9, 2.405e9),  # Expanded frequency range
-            'wifi_5ghz': (4.990e9, 5.010e9),    # Expanded frequency range
-            'wifi_6ghz': (5.990e9, 6.010e9)     # Expanded frequency range
-        }
-    },
-    'Smart Watches': {
-        'amplitude': (0, 0.9e-3),  # Increased amplitude
-        'frequency': (2.398e9, 2.402e9)  # Expanded frequency range
-    },
-    'Home Automation Devices': {
-        'amplitude': (0, 0.9e-3),  # Increased amplitude
-        'frequency': {
-            'zigbee': (2.398e9, 2.402e9),     # Expanded frequency range
-            'z_wave_eu': (867e6, 869e6),      # Expanded frequency range
-            'z_wave_us': (907e6, 909e6)       # Expanded frequency range
-        }
-    },
-    'Automotive Sensors': {
-        'amplitude': (0, 0.01),  # Increased amplitude
-        'frequency': {
-            'us': (314e6, 316e6),   # Expanded frequency range
-            'eu': (432e6, 434e6)    # Expanded frequency range
+            'us': (314e6, 316e6),  # Hz
+            'eu': (432e6, 434e6)  # Hz
         }
     }
 }
