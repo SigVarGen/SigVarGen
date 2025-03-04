@@ -58,8 +58,11 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
     # Normalize signal to range [-1, 1]
     signal -= np.mean(signal)  # Remove DC offset
     max_abs_value = np.max(np.abs(signal))
-    if max_abs_value > 0:
-        signal /= max_abs_value  # Normalize to [-1, 1]
+
+    if max_abs_value == 0:
+        raise ValueError("Generated signal has zero amplitude. Check input parameters.")
+    
+    signal /= max_abs_value  # Normalize to [-1, 1]
 
     # Rescale signal to be within the exact amplitude range [A_min, A_max]
     A_min, A_max = amplitude_range
