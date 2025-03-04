@@ -77,6 +77,7 @@ def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overl
     else:
         start_idx = random.randint(0, signal_length - duration_idx)
         end_idx = start_idx + duration_idx
+        interval = (start_idx, end_idx)
 
     if interval is None:
         return None, None  
