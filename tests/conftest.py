@@ -19,6 +19,25 @@ def sample_device_params():
     }
 
 @pytest.fixture
+def sample_interrupt_ranges():
+    """Fixture to provide mock interrupt ranges for a test device."""
+    return {
+        "DeviceA": {
+            "amplitude": (0.5, 2.0),
+            "frequency": {
+                "low": (5, 15),
+                "high": (20, 50),
+            }
+        }
+    }
+
+@pytest.fixture
+def sample_signal_length():
+    """Fixture to provide a standard signal length for tests."""
+    return 1000
+
+
+@pytest.fixture
 def sample_time_vector():
-    """Fixture to provide a standard time vector for testing."""
+    """Fixture to provide a standard time vector for tests."""
     return np.linspace(0, 1, 1000)
