@@ -44,7 +44,7 @@ def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals
             return start_idx, end_idx
     return None
 
-def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overlap):
+def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overlap, buffer=1):
     
     """
     Wrapper function to find a valid location for an interrupt in the signal.
@@ -59,6 +59,8 @@ def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overl
         List of existing occupied intervals.
     non_overlap : bool, optional
         Whether to ensure non-overlapping placement (default: True).
+    buffer : int, optional
+        Extra buffer to prevent interrupts from being placed too close to each other.
 
     Returns:
     -------
@@ -75,7 +77,7 @@ def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overl
     duration_idx = int(duration_ratio * signal_length)
 
     if non_overlap:
-        interval = get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals)
+        interval = get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals, buffer=buffer)
     else:
         start_idx = random.randint(0, signal_length - duration_idx)
         end_idx = start_idx + duration_idx

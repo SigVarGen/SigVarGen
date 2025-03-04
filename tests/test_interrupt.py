@@ -7,7 +7,8 @@ from SigVarGen import (
     blend_signal,
     apply_interrupt_modifications,
     generate_main_interrupt,
-    add_main_interrupt
+    add_main_interrupt,
+    add_smaller_interrupts
 )
 
 
@@ -57,7 +58,7 @@ def test_place_interrupt_non_overlap(sample_signal_length):
     Ensure place_interrupt finds a non-overlapping interval when non_overlap=True.
     """
     occupied = [(100, 200)]
-    result = place_interrupt(sample_signal_length, 0.05, occupied, non_overlap=True)
+    result = place_interrupt(sample_signal_length, 0.05, occupied, non_overlap=True, buffer=100)
 
     assert result != (None, None), "Function should return a valid interval"
 
@@ -305,4 +306,7 @@ def test_add_main_interrupt_with_complex_iter(sample_time_vector, sample_device_
     assert any(p['type'] == 'main' for p in interrupt_params), "At least one should be a main interrupt"
     assert all('sinusoids_params' in p for p in interrupt_params), "Each interrupt should have sinusoid parameters"
     assert np.any(modified_signal != base_signal), "Signal should be modified"
+
+
+
 
