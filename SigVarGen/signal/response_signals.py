@@ -182,14 +182,16 @@ def generate_main_interrupt(
         freq_range = rng['frequency']
         
     # Optionally scale frequency
-    freq_min = freq_range[0] * frequency_scale
-    freq_max = freq_range[1] * frequency_scale
-    freq_range_scaled = (freq_min, freq_max)
+    original_freq_min, original_freq_max = freq_range
+    scaled_freq_min = max(original_freq_min, original_freq_min * frequency_scale)
+    scaled_freq_max = min(original_freq_max, original_freq_max * frequency_scale)
+    freq_range_scaled = (scaled_freq_min, scaled_freq_max)
     
     # Optionally scale amplitude
-    amp_min = rng['amplitude'][0] * amplitude_scale
-    amp_max = rng['amplitude'][1] * amplitude_scale
-    amp_range_scaled = (amp_min, amp_max)
+    original_amp_min, original_amp_max = rng['amplitude']
+    scaled_amp_min = max(original_amp_min, original_amp_min * amplitude_scale)
+    scaled_amp_max = min(original_amp_max, original_amp_max * amplitude_scale)
+    amp_range_scaled = (scaled_amp_min, scaled_amp_max)
 
     # Number of sinusoids
     if n_sinusoids is None:
