@@ -4,7 +4,7 @@ import random
 from SigVarGen.signal.signal_generation import generate_signal
 from SigVarGen.variations.baseline_drift import apply_baseline_drift_middle_peak
 
-def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals, max_tries=1000):
+def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals, max_tries=1000, buffer=1):
     """
     Attempt to find a start_idx for a new interrupt interval that does not overlap
     with any existing intervals in occupied_intervals. If no non-overlapping interval is found
@@ -20,6 +20,8 @@ def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals
         List of (start_idx, end_idx) pairs representing occupied intervals.
     max_tries : int, optional
         Maximum attempts to find a valid interval (default: 1000).
+    buffer : int, optional
+        Extra buffer to prevent interrupts from being placed too close to each other.
 
     Returns:
     -------
@@ -34,10 +36,10 @@ def get_non_overlapping_interval(signal_length, duration_idx, occupied_intervals
     """
 
     for _ in range(max_tries):
-        start_idx = random.randint(0, signal_length - duration_idx)
-        end_idx = start_idx + duration_idx
+        start_idx = random.randint(0, max(0, signal_length - duration_idx))
+        end_idx = min(signal_length-1, start_idx + duration_idx)
         # Check overlap
-        overlap = any(not (end_idx <= s-100 or start_idx >= e+100) for (s, e) in occupied_intervals)
+        overlap = any(not (end_idx <= s-buffer or start_idx >= e+buffer) for (s, e) in occupied_intervals)
         if not overlap:
             return start_idx, end_idx
     return None
