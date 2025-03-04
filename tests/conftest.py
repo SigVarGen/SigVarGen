@@ -19,14 +19,27 @@ def sample_device_params():
     }
 
 @pytest.fixture
-def sample_interrupt_ranges():
+def sample_interrupt_ranges_drop():
     """Fixture to provide mock interrupt ranges for a test device."""
     return {
         "DeviceA": {
-            "amplitude": (0.5, 2.0),
+            "amplitude": (0.2, 1.0),
             "frequency": {
                 "low": (5, 15),
                 "high": (20, 50),
+            }
+        }
+    }
+
+@pytest.fixture
+def sample_interrupt_ranges_rise():
+    """Fixture to provide mock interrupt ranges for a test device."""
+    return {
+        "DeviceA": {
+            "amplitude": (9.0, 10.0),
+            "frequency": {
+                "low": (205, 215),
+                "high": (1020, 1500),
             }
         }
     }

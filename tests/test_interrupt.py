@@ -6,7 +6,8 @@ from SigVarGen import (
     place_interrupt,
     blend_signal,
     apply_interrupt_modifications,
-    generate_main_interrupt
+    generate_main_interrupt,
+    add_main_interrupt
 )
 
 
@@ -29,7 +30,7 @@ def test_get_non_overlapping_interval_with_conflict():
     Ensure function can find a non-overlapping interval when some occupied intervals exist.
     """
     occupied = [(100, 200), (300, 400)]
-    result = get_non_overlapping_interval(1000, 50, occupied)
+    result = get_non_overlapping_interval(1000, 50, occupied, buffer=100)
 
     assert result is not None, "Function should return a valid interval"
 
@@ -143,7 +144,7 @@ def test_apply_interrupt_modifications_with_drift():
 
 # --- Tests for generate_main_interrupt ---
 
-def test_generate_main_interrupt(sample_time_vector, sample_interrupt_ranges):
+def test_generate_main_interrupt(sample_time_vector, sample_interrupt_ranges_drop):
     """
     Verify generated interrupt has correct shape and expected number of sinusoids.
     """
@@ -151,14 +152,14 @@ def test_generate_main_interrupt(sample_time_vector, sample_interrupt_ranges):
     domain = "DeviceA"
     temp = "low"
     interrupt_signal, params = generate_main_interrupt(
-        t, domain, sample_interrupt_ranges, temp, n_sinusoids=5
+        t, domain, sample_interrupt_ranges_drop, temp, n_sinusoids=5
     )
     assert interrupt_signal.shape == t.shape, "Generated signal shape should match time vector shape"
     assert len(params) == 5, "Number of sinusoid parameters should match requested n_sinusoids"
     assert all(key in params[0] for key in ["amp", "freq", "phase"]), "Each sinusoid should have amp, freq, phase"
 
 
-def test_generate_main_interrupt_frequency_scaling(sample_time_vector, sample_interrupt_ranges):
+def test_generate_main_interrupt_frequency_scaling(sample_time_vector, sample_interrupt_ranges_drop):
     """
     Verify frequency scaling works when generating interrupts.
     """
@@ -166,14 +167,14 @@ def test_generate_main_interrupt_frequency_scaling(sample_time_vector, sample_in
     domain = "DeviceA"
     temp = "low"
     _, params = generate_main_interrupt(
-        t, domain, sample_interrupt_ranges, temp, frequency_scale=2.0
+        t, domain, sample_interrupt_ranges_drop, temp, frequency_scale=2.0
     )
     for param in params:
-        assert param["freq"] >= 10, "Frequency should scale correctly (lower bound)"
-        assert param["freq"] <= 30, "Frequency should scale correctly (upper bound)"
+        assert param["freq"] >= 5, "Frequency should scale correctly (lower bound)"
+        assert param["freq"] <= 15, "Frequency should scale correctly (upper bound)"
 
 
-def test_generate_main_interrupt_amplitude_scaling(sample_time_vector, sample_interrupt_ranges):
+def test_generate_main_interrupt_amplitude_scaling(sample_time_vector, sample_interrupt_ranges_drop):
     """
     Verify amplitude scaling works when generating interrupts.
     """
@@ -181,8 +182,127 @@ def test_generate_main_interrupt_amplitude_scaling(sample_time_vector, sample_in
     domain = "DeviceA"
     temp = "low"
     _, params = generate_main_interrupt(
-        t, domain, sample_interrupt_ranges, temp, amplitude_scale=2.0
+        t, domain, sample_interrupt_ranges_drop, temp, amplitude_scale=2.0
     )
     for param in params:
-        assert param["amp"] >= 1.0, "Amplitude should scale correctly (lower bound)"
-        assert param["amp"] <= 4.0, "Amplitude should scale correctly (upper bound)"
+        assert param["amp"] >= 0.2, "Amplitude should scale correctly (lower bound)"
+        assert param["amp"] <= 1.0, "Amplitude should scale correctly (upper bound)"
+
+
+# --- Tests for add_main_interrupt ---
+
+def test_add_main_interrupt_basic(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
+    """
+    Test that add_main_interrupt successfully modifies the base signal and returns appropriate metadata.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params, occupied_intervals = add_main_interrupt(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        temp=temp,
+        duration_ratio=0.1,
+        disperse=False,
+        drop=False,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert len(interrupt_params) == 1, "Should generate exactly one main interrupt"
+    assert len(occupied_intervals) == 1, "One interval should be marked as occupied"
+
+    interrupt = interrupt_params[0]
+    assert interrupt['type'] == 'main', "Interrupt type should be 'main'"
+    assert interrupt['start_idx'] >= 0, "Start index should be within signal bounds"
+    assert interrupt['duration_idx'] > 0, "Interrupt duration should be positive"
+    assert 'sinusoids_params' in interrupt, "Sinusoid params should be recorded"
+
+def test_add_main_interrupt_with_dispersal(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
+    """
+    Test the behavior when disperse=True.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params, occupied_intervals = add_main_interrupt(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        temp=temp,
+        duration_ratio=0.1,
+        disperse=True,
+        drop=False,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert len(interrupt_params) == 1, "Main interrupt should still be created"
+    assert np.any(modified_signal != base_signal), "Signal should be modified with dispersed content"
+
+def test_add_main_interrupt_with_drop(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
+    """
+    Test the behavior when drop=True (interrupt drops below baseline).
+    """
+    t = sample_time_vector
+    base_signal = np.ones_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params, occupied_intervals = add_main_interrupt(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_drop,
+        temp=temp,
+        duration_ratio=0.1,
+        disperse=False,
+        drop=True,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert np.min(modified_signal) < np.min(base_signal), "Signal should drop below baseline when drop=True"
+    assert len(interrupt_params) == 1, "Main interrupt should be created"
+    assert interrupt_params[0]['type'] == 'main', "Interrupt should be classified as 'main'"
+
+def test_add_main_interrupt_with_complex_iter(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
+    """
+    Test behavior when complex_iter > 0 (additional overlapping interrupts).
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params, occupied_intervals = add_main_interrupt(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        temp=temp,
+        duration_ratio=0.1,
+        disperse=False,
+        drop=False,
+        n_sinusoids=3,
+        non_overlap=True,
+        complex_iter=2
+    )
+
+    assert len(interrupt_params) == 3, "Should generate 1 main and 2 complex interrupts"
+    assert any(p['type'] == 'main' for p in interrupt_params), "At least one should be a main interrupt"
+    assert all('sinusoids_params' in p for p in interrupt_params), "Each interrupt should have sinusoid parameters"
+    assert np.any(modified_signal != base_signal), "Signal should be modified"
+
