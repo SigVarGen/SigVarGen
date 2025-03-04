@@ -27,6 +27,7 @@ license = { file = "LICENSE.txt" }
 
 [project.urls]
 Homepage = "https://github.com/SigVarGen/SigVarGen"
+Issues = "https://github.com/SigVarGen/SigVarGen/issues"
 
 [tool.setuptools]
 packages = ["SigVarGen"]

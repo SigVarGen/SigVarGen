@@ -39,7 +39,6 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
 
     Notes:
     ------
-    - The amplitude is scaled to ensure the contribution of each sinusoid is balanced.
     - The phase of each sinusoid is randomly initialized between 0 and 2π.
     - The generated signal is non-periodic.
     """

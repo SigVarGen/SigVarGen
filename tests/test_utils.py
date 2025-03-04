@@ -3,22 +3,6 @@ import numpy as np
 
 from SigVarGen.utils import generate_device_parameters, calculate_ED, calculate_CP, interpoling, normalization
 
-@pytest.fixture
-def sample_device_params():
-    return {
-        "DeviceA": {
-            "amplitude": (0, 10),
-            "frequency": {
-                "low": (100, 200),
-                "high": (500, 1000),
-            }
-        },
-        "DeviceB": {
-            "amplitude": (5, 15),
-            "frequency": (50, 150)
-        }
-    }
-
 def test_basic_split(sample_device_params):
     lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratio=0.5)
 
