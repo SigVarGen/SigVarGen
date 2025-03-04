@@ -292,8 +292,8 @@ def add_main_interrupt(
         if shrink_complex:
             current_duration = max(1, int(current_duration * shrink_factor))
 
-        # Place the next complex interrupt within the original main interrupt region
-        complex_start = random.randint(current_start, current_end - current_duration)
+        complex_start = random.randint(current_start, max(current_start, current_end - current_duration))
+
         complex_end = complex_start + current_duration
 
         base_signal, complex_param = add_complexity_to_inter(
@@ -309,7 +309,9 @@ def add_main_interrupt(
             sinusoids_params=interrupt_sinusoids_params,
             blend_factor=blend_factor
         )
-        interrupt_params.append(complex_param)
+        
+        if complex_param:
+            interrupt_params.append(complex_param)
         
 
     return base_signal, interrupt_params, occupied_intervals
@@ -363,20 +365,20 @@ def add_complexity_to_inter(
     length_main = end_main - start_main
     if length_main <= 1:
         # No room to add a complex interrupt
-        return base_signal, {}
+        return base_signal, None
 
     min_small_len = max(1, length_main // 5)
     max_small_len = max(1, length_main // 3)
-    start_idx2 = random.randint(start_main, end_main)
     duration2 = random.randint(min_small_len, max_small_len)
+    start_idx2 = random.randint(start_main, max(start_main, end_main-duration2))
     end_idx2 = min(start_idx2 + duration2, end_main)
 
     # 2) Slice out the portion from the updated base signal and the full interrupt wave
     base_slice2 = base_signal[start_idx2:end_idx2]
     inter_part2_raw = full_interrupt_signal[start_idx2:end_idx2]
 
-    if base_slice2.size == 0 or inter_part2_raw.size == 0:
-        return base_signal, []
+    if base_slice2.size <= 1 or inter_part2_raw.size <= 1:
+        return base_signal, None
 
     #final_offset2 = random.uniform(old_offset, 1.4 * old_offset)
 
