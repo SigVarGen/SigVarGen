@@ -57,4 +57,4 @@ def sample_time_vector():
 
 @pytest.fixture
 def sample_wave():
-    return np.zeros(1000)
+    return np.sin(np.linspace(0, 2 * np.pi, 1000))

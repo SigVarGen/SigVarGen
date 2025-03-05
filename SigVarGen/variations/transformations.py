@@ -1,5 +1,7 @@
 import numpy as np
 
+from SigVarGen.signal.signal_generation import generate_signal
+
 def apply_time_shift(wave, max_shift):
     """
     Apply a random time shift to the signal.
