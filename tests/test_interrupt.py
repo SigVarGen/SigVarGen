@@ -309,4 +309,151 @@ def test_add_main_interrupt_with_complex_iter(sample_time_vector, sample_device_
 
 
 
+# --- Tests for add_smaller_interrupts --- 
+
+def test_add_smaller_interrupts_basic(sample_time_vector, sample_interrupt_ranges_rise):
+    """
+    Test adding a small interrupt to an empty signal.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+    occupied_intervals = []
+
+    modified_signal, interrupt_params = add_smaller_interrupts(
+        t=t,
+        base_signal=base_signal.copy(),
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        domain=domain,
+        temp=temp,
+        n_smaller_interrupts=1,
+        occupied_intervals=occupied_intervals,
+        disperse=False,
+        drop=False,
+        small_duration_ratio=0.05,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert len(interrupt_params) == 1, "Exactly one small interrupt should be added"
+    assert len(occupied_intervals) == 1, "One interval should be occupied"
+    assert interrupt_params[0]['type'] == 'small', "Interrupt should be classified as 'small'"
+
+def test_add_smaller_interrupts_no_space(sample_time_vector, sample_interrupt_ranges_rise):
+    """
+    Test adding interrupts when no space is available.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+    occupied_intervals = [(0, len(t) - 1)]  # Entire signal occupied
+
+    modified_signal, interrupt_params = add_smaller_interrupts(
+        t=t,
+        base_signal=base_signal.copy(),
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        domain=domain,
+        temp=temp,
+        n_smaller_interrupts=1,
+        occupied_intervals=occupied_intervals,
+        disperse=False,
+        drop=False,
+        small_duration_ratio=0.1,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert np.array_equal(modified_signal, base_signal), "Signal should remain unchanged when no space is available"
+    assert interrupt_params == [], "No interrupts should be created"
+    assert len(occupied_intervals) == 1, "Occupied intervals should remain unchanged"
+
+def test_add_smaller_interrupts_with_dispersal(sample_time_vector, sample_interrupt_ranges_rise):
+    """
+    Test adding smaller interrupts with dispersal (adds noise-like components).
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+    occupied_intervals = []
+
+    modified_signal, interrupt_params = add_smaller_interrupts(
+        t=t,
+        base_signal=base_signal.copy(),
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        domain=domain,
+        temp=temp,
+        n_smaller_interrupts=1,
+        occupied_intervals=occupied_intervals,
+        disperse=True,
+        drop=False,
+        small_duration_ratio=0.05,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert len(interrupt_params) == 1, "One small interrupt should be added"
+    assert np.any(modified_signal != base_signal), "Signal should be modified by the interrupt"
+
+def test_add_smaller_interrupts_with_drop(sample_time_vector, sample_interrupt_ranges_drop):
+    """
+    Test adding smaller interrupts with drop=True (lowering signal below baseline).
+    """
+    t = sample_time_vector
+    base_signal = np.ones_like(t)
+    domain = "DeviceA"
+    temp = "low"
+    occupied_intervals = []
+
+    modified_signal, interrupt_params = add_smaller_interrupts(
+        t=t,
+        base_signal=base_signal.copy(),
+        INTERRUPT_RANGES=sample_interrupt_ranges_drop,
+        domain=domain,
+        temp=temp,
+        n_smaller_interrupts=1,
+        occupied_intervals=occupied_intervals,
+        disperse=False,
+        drop=True,
+        small_duration_ratio=0.05,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert np.min(modified_signal) < np.min(base_signal), "Signal should drop below baseline when drop=True"
+    assert len(interrupt_params) == 1, "One small interrupt should be added"
+    assert interrupt_params[0]['type'] == 'small', "Interrupt should be classified as 'small'"
+
+def test_add_multiple_smaller_interrupts(sample_time_vector, sample_interrupt_ranges_rise):
+    """
+    Test adding multiple smaller interrupts.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+    occupied_intervals = []
+
+    modified_signal, interrupt_params = add_smaller_interrupts(
+        t=t,
+        base_signal=base_signal.copy(),
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        domain=domain,
+        temp=temp,
+        n_smaller_interrupts=3,
+        occupied_intervals=occupied_intervals,
+        disperse=False,
+        drop=False,
+        small_duration_ratio=0.05,
+        n_sinusoids=3,
+        non_overlap=True
+    )
+
+    assert len(interrupt_params) == 3, "Three smaller interrupts should be added"
+    assert len(occupied_intervals) == 3, "Three intervals should be occupied"
+    assert all(p['type'] == 'small' for p in interrupt_params), "All interrupts should be classified as 'small'"
+
 
