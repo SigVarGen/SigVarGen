@@ -160,7 +160,7 @@ def generate_main_interrupt(
     domain : str
         Key for amplitude/frequency ranges in interrupt_ranges.
     interrupt_ranges : dict
-        Contains amplitude and frequency data for each domain.
+        Contains response amplitude and frequency ranges for each device domain.
     temp : int
         Determines which frequency index to select.
     n_sinusoids : int, optional
@@ -246,7 +246,7 @@ def add_main_interrupt(
     DEVICE_RANGES : dict
         Contains overall device amplitude/frequency limits.
     INTERRUPT_RANGES : dict
-        Contains amplitude and frequency ranges for each device domain.
+        Contains response amplitude and frequency ranges for each device domain.
     temp : int
         Determines which frequency index to select.
     duration_ratio : float
@@ -401,7 +401,7 @@ def add_complexity_to_inter(
     domain : str
         Key for amplitude/frequency ranges in INTERRUPT_RANGES.
     INTERRUPT_RANGES : dict
-        Contains amplitude/frequency info for each domain.
+        Contains response amplitude and frequency ranges for each device domain.
     drop : bool
         If True => subtract offset, else add offset.
     old_offset : float
@@ -497,7 +497,7 @@ def add_smaller_interrupts(
     base_signal : np.ndarray
         The original base signal (may already contain some modifications).
     INTERRUPT_RANGES : dict
-        Contains amplitude and frequency ranges for each device domain.
+        Contains response amplitude and frequency ranges for each device domain.
     domain : str
         Key for amplitude/frequency ranges in INTERRUPT_RANGES.
     temp : int
@@ -610,7 +610,7 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
     domain : str
         Key for amplitude/frequency ranges in RANGES.
     INTERRUPT_RANGES : dict
-        Dictionary containing frequency and amplitude ranges for interrupts.
+        Contains response amplitude and frequency ranges for each device domain.
     temp : int
         Determines which frequency index to select.
     drop : bool, optional
@@ -694,40 +694,58 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
     return base_signal, main_interrupt_params + small_interrupt_params
 
 
-def add_interrupt_bursts(t, base_signal, domain, INTERRUPT_RANGES, temp, start_idx=0, end_idx=0, n_small_interrupts=None, non_overlap=False):
+def add_interrupt_bursts(
+    t,
+    base_signal,
+    domain,
+    DEVICE_RANGES,
+    device_min,
+    device_max,
+    temp,
+    start_idx=0,
+    end_idx=0,
+    n_small_interrupts=None,
+    non_overlap=False
+):
     """
-    Add multiple small interrupts to the signal.
+    Add multiple small interrupts to the signal within a specified time window.
 
-    Parameters:
+    Parameters
     ----------
-    t : numpy.ndarray
+    t : np.ndarray
         Time vector for the signal (usually np.linspace).
-    base_signal : numpy.ndarray
+    base_signal : np.ndarray
         The base signal to modify.
     domain : str
-        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
-    INTERRUPT_RANGES : dict
-        Dictionary containing frequency and amplitude ranges for interrupts.
+        Key for amplitude/frequency ranges in RANGES.
+    DEVICE_RANGES : dict
+        Contains overall device amplitude/frequency limits.
+    device_min : float
+        Minimum possible amplitude of the device.
+    device_max : float
+        Maximum possible amplitude of the device.
     temp : int
         Determines which frequency index to select.
     start_idx : int, optional
         Minimum start index for interrupts (default: 0).
     end_idx : int, optional
-        Maximum end index for interrupts (default: 0).
+        Maximum end index for interrupts (default: 0, meaning full signal length).
     n_small_interrupts : int, optional
         Number of small interrupts to add (default: Random from 15 to 20).
     non_overlap : bool, optional
-        If interrupt bursts overlaps with interrupts placed before
+        If True, prevents overlap between bursts.
 
-    Returns:
+    Returns
     -------
-    base_signal : numpy.ndarray
+    base_signal : np.ndarray
         The modified signal with added small interrupts.
     """
+    if end_idx == 0:
+        end_idx = len(t)
 
-    interrupt_range = INTERRUPT_RANGES[domain]
-    freq_range = interrupt_range['frequency'][temp] if temp != 0 else interrupt_range['frequency']
-    interrupt_frequency_range = (freq_range[0] + (freq_range[1] - freq_range[0]) * 0.5, freq_range[1])
+    burst_range = DEVICE_RANGES[domain]
+    freq_range = burst_range['frequency'][temp] if temp != 0 else burst_range['frequency']
+    burst_frequency_range = (freq_range[0] + (freq_range[1] - freq_range[0]) * 0.5, freq_range[1])
 
     if n_small_interrupts is None:
         n_small_interrupts = random.randint(15, 20)
@@ -736,32 +754,56 @@ def add_interrupt_bursts(t, base_signal, domain, INTERRUPT_RANGES, temp, start_i
     dif = np.max(base_signal) - np.min(base_signal)
 
     for _ in range(n_small_interrupts):
-        # Generate a small interrupt signal
+        # Generate a small interrupt signal (full signal length)
         n_sinusoids = random.randint(2, 10)
         small_interrupt_signal, small_interrupt_sinusoids_params = generate_signal(
-            t, n_sinusoids, (0.7 * interrupt_range['amplitude'][1], 0.9 * interrupt_range['amplitude'][1]), interrupt_frequency_range
+            t, n_sinusoids, (0.7 * burst_range['amplitude'][1], 0.9 * burst_range['amplitude'][1]), burst_frequency_range
         )
 
-        small_duration_ratio = random.uniform(0.001, 0.003)
-        start_idx, end_idx = place_interrupt(len(t), small_duration_ratio, occupied_intervals, non_overlap)
+        # Convert global occupied intervals to local (within the window)
+        local_occupied_intervals = [
+            (s - start_idx, e - start_idx)
+            for (s, e) in occupied_intervals
+            if start_idx <= s < end_idx and start_idx <= e <= end_idx
+        ]
 
-        if start_idx is None:
+        # Place within the window
+        small_duration_ratio = random.uniform(0.001, 0.003)
+        local_start_idx, local_end_idx = place_interrupt(
+            end_idx - start_idx,
+            small_duration_ratio,
+            local_occupied_intervals,
+            non_overlap
+        )
+
+        # If placement failed (no room left), skip to next interrupt
+        if local_start_idx is None:
             continue
 
-        s_inter_part = small_interrupt_signal[start_idx:end_idx]
+        # Convert back to global indices
+        actual_start_idx = local_start_idx + start_idx
+        actual_end_idx = local_end_idx + start_idx
 
-        # Randomly determine if offset should be added or subtracted
+        # Slice the part of the generated signal to add
+        s_inter_part = small_interrupt_signal[actual_start_idx:actual_end_idx]
+
+        # Apply offset adjustment (random rise or drop)
         drop2 = random.choice([True, False])
-        if drop2 and all(random.choice([True, False]) for _ in range(3)):  # lower probability check
+        if drop2 and all(random.choice([True, False]) for _ in range(3)):  # Lower probability for "rise"
             s_offset = dif * random.uniform(0.01, 0.06)
             s_inter_part += s_offset
         else:
             s_offset = dif * random.uniform(0.06, 0.1)
             s_inter_part -= s_offset
 
-        base_signal[start_idx:end_idx] += s_inter_part
+        # Apply to base signal
+        base_signal[actual_start_idx:actual_end_idx] += s_inter_part
 
-        occupied_intervals.append((start_idx, end_idx))
+        # Track this interval globally
+        occupied_intervals.append((actual_start_idx, actual_end_idx))
+
+    # Ensure final signal respects device limits
+    base_signal = np.clip(base_signal, device_min, device_max)
 
     return base_signal
 
