@@ -156,13 +156,13 @@ def generate_main_interrupt(
     Parameters
     ----------
     t : np.ndarray
-        Time vector.
+        Time vector for the signal (usually np.linspace).
     domain : str
-        Device or domain to pick from interrupt_ranges.
+        Key for amplitude/frequency ranges in interrupt_ranges.
     interrupt_ranges : dict
         Contains amplitude and frequency data for each domain.
     temp : int
-        Determines which frequency index/range to select.
+        Determines which frequency index to select.
     n_sinusoids : int, optional
         Number of sinusoids to sum. If None, randomly chosen (2-10).
     amplitude_scale : float, optional
@@ -174,7 +174,7 @@ def generate_main_interrupt(
     -------
     interrupt_signal : np.ndarray
         Generated sinusoidal-based interrupt signal (same length as t).
-    interrupt_params : dict
+    interrupt_params : list of dict
         Parameters describing the generated sinusoids.
     """
     rng = interrupt_ranges[domain]
@@ -229,9 +229,61 @@ def add_main_interrupt(
     shrink_factor=0.9
 ):
     """
-    Orchestrate the process of adding a main interrupt to the base signal,
-    plus optional smaller overlapping interruptions.
+    Add a main response signal to the base signal, with optional addition of complex response.
+
+    The main interrupt is a sinusoidal-based signal, scaled and placed into the base signal.
+    Optionally, smaller secondary overlapping interrupts can be added inside the main interrupt
+    when `complex_iter` > 0.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time vector for the signal (usually np.linspace).
+    base_signal : np.ndarray
+        The original base signal (may already contain some modifications).
+    domain : str
+        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
+    DEVICE_RANGES : dict
+        Contains overall device amplitude/frequency limits.
+    INTERRUPT_RANGES : dict
+        Contains amplitude and frequency ranges for each device domain.
+    temp : int
+        Determines which frequency index to select.
+    duration_ratio : float
+        Fraction of total signal length the main interrupt should occupy.
+    disperse : bool, optional
+        If True, apply dispersal (turn sinusoid into more noise-like signal).
+    drop : bool, optional
+        If True, modify signal to dip below baseline instead of rising above.
+    n_sinusoids : int, optional
+        Number of sinusoids to generate for the main interrupt (None means random choice).
+    non_overlap : bool, optional
+        If True, prevents the main interrupt from overlapping with existing intervals.
+    complex_iter : int, optional
+        Number of smaller overlapping interrupts to add inside the main interrupt.
+    blend_factor : float, optional
+        Blend weight between base and interrupt (default = 0.5).
+    shrink_complex : bool, optional
+        If True, each successive smaller interrupt is shorter than the previous.
+    shrink_factor : float, optional
+        Fraction to shrink the duration of each smaller interrupt (default = 0.9).
+
+    Returns
+    -------
+    updated_base_signal : np.ndarray
+        The base signal after adding the response signal.
+    interrupt_params : list of dict
+        Metadata describing the main interrupt and any smaller overlapping interrupts.
+        Each entry contains:
+            - start_idx (int): Start index of the interrupt.
+            - duration_idx (int): Length of the interrupt.
+            - offset (float): Applied offset.
+            - sinusoids_params (dict): Parameters used to generate the sinusoid.
+            - type (str): "main" for primary interrupt.
+    occupied_intervals : list of tuple
+        Updated list of (start_idx, end_idx) representing all occupied intervals after adding interrupts.
     """
+
     # Generate the main interrupt signal (raw)
     main_interrupt_signal, interrupt_sinusoids_params = generate_main_interrupt(
         t=t,
@@ -286,7 +338,7 @@ def add_main_interrupt(
 
     occupied_intervals.append((start_idx, end_idx))
 
-    # === Add smaller overlapping interrupts if complex_iter > 0 ===
+    # Add smaller overlapping interrupts if complex_iter > 0
 
     current_start = start_idx
     current_end = end_idx
@@ -377,30 +429,28 @@ def add_complexity_to_inter(
     start_idx2 = random.randint(start_main, max(start_main, end_main-duration2))
     end_idx2 = min(start_idx2 + duration2, end_main)
 
-    # 2) Slice out the portion from the updated base signal and the full interrupt wave
+    # Slice out the portion from the updated base signal and the full interrupt wave
     base_slice2 = base_signal[start_idx2:end_idx2]
     inter_part2_raw = full_interrupt_signal[start_idx2:end_idx2]
 
     if base_slice2.size <= 1 or inter_part2_raw.size <= 1:
         return base_signal, None
 
-    #final_offset2 = random.uniform(old_offset, 1.4 * old_offset)
-
-    # 4) Optionally apply drift + offset with bounding logic
+    # Optionally apply drift + offset with bounding logic
     inter_part2_modified, final_offset2 = apply_interrupt_modifications(
         inter_part=inter_part2_raw.copy(),
         base_part=base_slice2.copy(),
         device_min=min(INTERRUPT_RANGES[domain]['amplitude'][0], DEVICE_RANGES[domain]['amplitude'][0]),
         device_max=max(INTERRUPT_RANGES[domain]['amplitude'][1], DEVICE_RANGES[domain]['amplitude'][1]),
         drop=drop,
-        disperse=False,       # Maybe always disperse for complex interrupts?
+        disperse=False, 
         blend_factor=blend_factor
     )
 
-    # 5) Combine with the base signal
+    # Combine with the base signal
     updated_slice2 = blend_signal(base_slice2, inter_part2_modified, blend=blend_factor)
 
-    # 6) Check final bounding and clamp if you want to avoid any small overshoot:
+    # Check final bounding and clamp if you want to avoid any small overshoot ? Should be redundant
     #updated_slice2 = np.clip(updated_slice2,
     #                         INTERRUPT_RANGES[domain]['amplitude'][0],
     #                         INTERRUPT_RANGES[domain]['amplitude'][1])
@@ -431,39 +481,92 @@ def add_smaller_interrupts(
     drop,
     small_duration_ratio,
     n_sinusoids=None,
-    non_overlap=True
+    non_overlap=True,
+    buffer=1
 ):
     """
-    Add secondary interrupts to the base signal, returning the updated signal
-    plus metadata on each added interrupt.
+    Add secondary (smaller) interrupts to a base signal.
+
+    This function places and blends smaller sinusoidal-based interrupts into an existing
+    base signal.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time vector for the signal (usually np.linspace).
+    base_signal : np.ndarray
+        The original base signal (may already contain some modifications).
+    INTERRUPT_RANGES : dict
+        Contains amplitude and frequency ranges for each device domain.
+    domain : str
+        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
+    temp : int
+        Determines which frequency index to select.
+    n_smaller_interrupts : int
+        Number of smaller interrupts to insert into the base signal.
+    occupied_intervals : list
+        List of already occupied intervals (start_idx, end_idx) — used to avoid overlap.
+    disperse : bool
+        If True, apply dispersal (turn sinusoid into more noise-like signal).
+    drop : bool
+        If True, modify signal to dip below baseline instead of rising above.
+    small_duration_ratio : float
+        Fraction of total signal length each small interrupt should occupy.
+    n_sinusoids : int, optional
+        Number of sinusoids to generate for each interrupt (None means random choice).
+    non_overlap : bool, optional
+        If True, prevents smaller interrupts from overlapping with occupied intervals.
+    buffer : int, optional
+        Minimum spacing (in samples) to keep between interrupts when non_overlap=True.
+        Default is 1 sample, can be adjusted to enforce larger gaps.
+
+    Returns
+    -------
+    updated_base_signal : np.ndarray
+        The base signal after adding the new interrupts.
+    interrupt_params : list of dict
+        Metadata describing the smaller interrupt that was added.
+        Metadata for each added interrupt, contains:
+            - start_idx (int): Start index of interrupt.
+            - duration_idx (int): Length of the interrupt.
+            - offset (float): Applied offset.
+            - sinusoids_params (dict): Parameters used to generate the sinusoid.
+            - type (str): "small" indicating this is a smaller interrupt.
     """
+
     interrupt_params = []
 
     for _ in range(n_smaller_interrupts):
         
-        # 3) Generate interrupt signal
+        # Generate interrupt signal (full length, then sliced later)
         small_interrupt_signal, small_sinusoids_params = generate_main_interrupt(
-            t,
-            domain,
-            INTERRUPT_RANGES,
-            temp,
+            t=t,
+            domain=domain,
+            interrupt_ranges=INTERRUPT_RANGES,
+            temp=temp,
             n_sinusoids=n_sinusoids,
             amplitude_scale=1.0,
             frequency_scale=1.0
         )
 
-        # 2) Place
+        # Place the interrupt into the signal
         start_idx, end_idx = place_interrupt(
-            len(t), small_duration_ratio, occupied_intervals, non_overlap
+            len(t),
+            small_duration_ratio,
+            occupied_intervals,
+            non_overlap,
+            buffer=buffer
         )
+
+        # If no valid position is found, skip this interrupt
         if start_idx is None:
             continue
 
-        # 3) Slice
+        # Slice the relevant section of both base and generated signal
         base_slice = base_signal[start_idx:end_idx]
         s_inter_raw = small_interrupt_signal[start_idx:end_idx]
 
-        # 4) Modify
+        # Apply signal modifications (e.g., dispersal, offset shift, clipping to device limits)
         s_inter_modified, s_offset = apply_interrupt_modifications(
             inter_part=s_inter_raw.copy(),
             base_part=base_slice.copy(),
@@ -473,10 +576,10 @@ def add_smaller_interrupts(
             disperse=disperse
         )
 
-        # 5) Combine
-        base_signal[start_idx:end_idx] = blend_signal(base_slice, s_inter_modified) #s_inter_modified  
+        # Blend modified interrupt into the base signal
+        base_signal[start_idx:end_idx] = blend_signal(base_slice, s_inter_modified)
 
-        # 6) Save metadata
+        # Save metadata for this interrupt
         interrupt_params.append({
             'start_idx': start_idx,
             'duration_idx': end_idx - start_idx,
@@ -485,11 +588,10 @@ def add_smaller_interrupts(
             'type': 'small'
         })
 
+        # Mark interval as occupied to prevent future overlap
         occupied_intervals.append((start_idx, end_idx))
 
     return base_signal, interrupt_params
-
-
 
 
 def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, 
@@ -502,15 +604,15 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
     Parameters:
     ----------
     t : numpy.ndarray
-        Time vector of the signal.
+        Time vector for the signal (usually np.linspace).
     base_signal : numpy.ndarray
         The base signal to modify.
     domain : str
-        The domain to use for selecting amplitude and frequency ranges.
+        Key for amplitude/frequency ranges in RANGES.
     INTERRUPT_RANGES : dict
         Dictionary containing frequency and amplitude ranges for interrupts.
     temp : int
-        Determines which frequency range to select.
+        Determines which frequency index to select.
     drop : bool, optional
         If True, the interrupt signal will be negatively offset (default: True).
     disperse : bool, optional
@@ -577,15 +679,15 @@ def add_interrupt_bursts(t, base_signal, domain, INTERRUPT_RANGES, temp, start_i
     Parameters:
     ----------
     t : numpy.ndarray
-        Time vector of the signal.
+        Time vector for the signal (usually np.linspace).
     base_signal : numpy.ndarray
         The base signal to modify.
     domain : str
-        The domain to use for selecting amplitude and frequency ranges.
+        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
     INTERRUPT_RANGES : dict
         Dictionary containing frequency and amplitude ranges for interrupts.
     temp : int
-        Determines which frequency range to select.
+        Determines which frequency index to select.
     start_idx : int, optional
         Minimum start index for interrupts (default: 0).
     end_idx : int, optional
