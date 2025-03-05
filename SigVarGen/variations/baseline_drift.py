@@ -1,17 +1,55 @@
 import numpy as np
 
 def apply_baseline_drift_region(wave, max_drift, start_frac=0.3, end_frac=0.7):
+    """
+    Applies a linear baseline drift to a specified region of the signal.
+
+    Parameters
+    ----------
+    wave : np.ndarray
+        The input signal.
+    max_drift : float
+        Maximum drift amplitude.
+    start_frac : float, optional
+        Fractional position to start the drift (default: 0.3, i.e., 30% into the signal).
+    end_frac : float, optional
+        Fractional position to end the drift (default: 0.7, i.e., 70% into the signal).
+
+    Returns
+    -------
+    np.ndarray
+        The signal with the applied regional drift.
+    """
     drift = np.zeros(len(wave))
     start_idx = int(start_frac * len(wave))
     end_idx = int(end_frac * len(wave))
     
-    # Only in [start_idx:end_idx], we introduce a linear drift
+    # Linear drift only in [start_idx:end_idx]
     final_value = np.random.uniform(-max_drift, max_drift)
     drift[start_idx:end_idx] = np.linspace(0, final_value, end_idx - start_idx)
     
     return wave + drift
 
 def apply_baseline_drift_polynomial(wave, max_drift, reversed=False, order=2):
+    """
+    Applies a polynomial baseline drift across the entire signal.
+
+    Parameters
+    ----------
+    wave : np.ndarray
+        The input signal.
+    max_drift : float
+        Maximum drift amplitude.
+    reversed : bool, optional
+        If True, reverses the polynomial drift shape (final value at the start instead of the end).
+    order : int, optional
+        Polynomial order (default: 2, quadratic).
+
+    Returns
+    -------
+    np.ndarray
+        The signal with the applied polynomial drift.
+    """
     N = len(wave)
     x = np.linspace(0, 1, N)
     final_value = np.random.uniform(-max_drift, max_drift)
@@ -26,6 +64,25 @@ def apply_baseline_drift_polynomial(wave, max_drift, reversed=False, order=2):
     return wave + drift
 
 def apply_baseline_drift_piecewise(wave, max_drift, reversed=False, num_pieces=3):
+    """
+    Applies a piecewise linear baseline drift to the signal.
+
+    Parameters
+    ----------
+    wave : np.ndarray
+        The input signal.
+    max_drift : float
+        Maximum drift amplitude for each piece.
+    reversed : bool, optional
+        If True, reverses the order of the drift pieces.
+    num_pieces : int, optional
+        Number of segments (pieces) to divide the signal into (default: 3).
+
+    Returns
+    -------
+    np.ndarray
+        The signal with the applied piecewise drift.
+    """
     N = len(wave)
     drift = np.zeros(N)
     
@@ -57,15 +114,30 @@ def apply_baseline_drift_piecewise(wave, max_drift, reversed=False, num_pieces=3
     return wave + drift
 
 def apply_baseline_drift_quadratic(wave, max_drift, reversed=False):
+    """
+    Applies a quadratic baseline drift across the entire signal.
 
-    # 1. Create a time vector from 0 to 1 for the length of the wave
+    Parameters
+    ----------
+    wave : np.ndarray
+        The input signal.
+    max_drift : float
+        Maximum drift amplitude.
+    reversed : bool, optional
+        If True, reverses the drift (starts at max and returns to zero at the end).
+
+    Returns
+    -------
+    np.ndarray
+        The signal with the applied quadratic drift.
+    """
     N = len(wave)
     t = np.linspace(0, 1, N)
 
-    # 2. Pick a final drift value randomly within [-max_drift, max_drift]
+    # Pick a final drift value randomly within [-max_drift, max_drift]
     final_value = np.random.uniform(-max_drift, max_drift)
 
-    # 3. Construct a quadratic drift:
+    # Construct a quadratic drift:
     #    - If not reversed: drift(0) = 0, drift(1) = final_value
     #      a simple form is final_value * t^2
     #    - If reversed: drift(0) = final_value, drift(1) = 0
