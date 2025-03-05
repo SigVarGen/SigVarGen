@@ -252,11 +252,11 @@ def add_main_interrupt(
     duration_ratio : float
         Fraction of total signal length the main interrupt should occupy.
     disperse : bool, optional
-        If True, apply dispersal (turn sinusoid into more noise-like signal).
+        If True, the signal will have a varying baseline drift (default: True).
     drop : bool, optional
         If True, modify signal to dip below baseline instead of rising above.
     n_sinusoids : int, optional
-        Number of sinusoids to generate for the main interrupt (None means random choice).
+        Number of sinusoids to sum. If None, randomly chosen (2-10).
     non_overlap : bool, optional
         If True, prevents the main interrupt from overlapping with existing intervals.
     complex_iter : int, optional
@@ -409,7 +409,7 @@ def add_complexity_to_inter(
     sinusoids_params : dict or list
         The metadata describing how the main interrupt was generated (reuse if you want).
     blend_factor : float, optional
-        Weighting for final combination (default=0.5).
+        Blend weight between base and interrupt (default = 0.5).
     
     Returns
     -------
@@ -507,13 +507,13 @@ def add_smaller_interrupts(
     occupied_intervals : list
         List of already occupied intervals (start_idx, end_idx) — used to avoid overlap.
     disperse : bool
-        If True, apply dispersal (turn sinusoid into more noise-like signal).
+        If True, the signal will have a varying baseline drift (default: True).
     drop : bool
         If True, modify signal to dip below baseline instead of rising above.
     small_duration_ratio : float
         Fraction of total signal length each small interrupt should occupy.
     n_sinusoids : int, optional
-        Number of sinusoids to generate for each interrupt (None means random choice).
+        Number of sinusoids to sum. If None, randomly chosen (2-10).
     non_overlap : bool, optional
         If True, prevents smaller interrupts from overlapping with occupied intervals.
     buffer : int, optional
@@ -597,9 +597,9 @@ def add_smaller_interrupts(
 def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, 
                             temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, 
                             n_sinusoids=None, non_overlap=True, complex_iter=0, blend_factor=0.5, 
-                            shrink_complex=False, shrink_factor=0.9):
+                            shrink_complex=False, shrink_factor=0.9, buffer=1):
     """
-    Add one main interrupt and between 0 to 2 smaller interrupts (non-overlapping) to the signal.
+    Add one main interrupt and between 0 to 2 smaller interrupts to the signal.
 
     Parameters:
     ----------
@@ -621,13 +621,34 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
         Ratio of signal length to allocate for main interrupt (default: Random from 0.06 to 0.12).
     n_smaller_interrupts : int, optional
         Number of smaller interrupts to add (default: Random 0 to 2).
+    n_sinusoids : int, optional
+        Number of sinusoids to sum. If None, randomly chosen (2-10).
+    non_overlap : bool, optional
+        If True, prevent interrupts from overlapping with previously occupied intervals.
+    complex_iter : int, optional
+        Number of smaller (overlapping) interrupts to embed inside the main interrupt region (default: 0).
+    blend_factor : float, optional
+        Blend weight between base and interrupt (default = 0.5).
+    shrink_complex : bool, optional
+        If True, each successive complex interrupt shrinks in size (default: False).
+    shrink_factor : float, optional
+        Fraction to shrink each overlapping complex interrupt by (default: 0.9).
+    buffer : int, optional
+        Minimum spacing (in samples) to keep between interrupts when non_overlap=True.
+        Default is 1 sample, can be adjusted to enforce larger gaps.
 
     Returns:
     -------
     base_signal : numpy.ndarray
         The modified signal with added interrupts.
     interrupt_params : list of dict
-        List of dictionaries containing details about the interrupts.
+        Metadata describing the smaller interrupt that was added.
+        Metadata for each added interrupt, contains:
+            - start_idx (int): Start index of interrupt.
+            - duration_idx (int): Length of the interrupt.
+            - offset (float): Applied offset.
+            - sinusoids_params (dict): Parameters used to generate the sinusoid.
+            - type (str): "small" indicating this is a smaller interrupt.
     """
     if duration_ratio is None:
         duration_ratio = random.uniform(0.06, 0.12)
@@ -667,7 +688,8 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
                 drop=drop,
                 small_duration_ratio=small_duration_ratio,
                 n_sinusoids=n_sinusoids,
-                non_overlap=non_overlap)
+                non_overlap=non_overlap,
+                buffer=buffer)
 
     return base_signal, main_interrupt_params + small_interrupt_params
 
