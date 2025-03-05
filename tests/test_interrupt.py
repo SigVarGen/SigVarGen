@@ -8,7 +8,9 @@ from SigVarGen import (
     apply_interrupt_modifications,
     generate_main_interrupt,
     add_main_interrupt,
-    add_smaller_interrupts
+    add_smaller_interrupts,
+    add_interrupt_with_params,
+    add_interrupt_bursts
 )
 
 
@@ -457,3 +459,275 @@ def test_add_multiple_smaller_interrupts(sample_time_vector, sample_interrupt_ra
     assert all(p['type'] == 'small' for p in interrupt_params), "All interrupts should be classified as 'small'"
 
 
+# --- Tests for add_interrupt_with_params ---
+
+def test_add_interrupt_with_params_basic(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
+    """
+    Test basic execution of add_interrupt_with_params with all defaults.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params = add_interrupt_with_params(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_drop,
+        temp=temp
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert len(interrupt_params) >= 1, "At least one main interrupt should be added"
+    assert all('start_idx' in p and 'duration_idx' in p for p in interrupt_params), "Each interrupt should have basic metadata"
+    assert any(p['type'] == 'main' for p in interrupt_params), "There should be exactly one main interrupt"
+    assert all(p['type'] in ['main', 'small'] for p in interrupt_params), "Interrupt types should be 'main' or 'small'"
+
+def test_add_interrupt_with_params_with_custom_values(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
+    """
+    Test add_interrupt_with_params using custom duration and smaller interrupts count.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    modified_signal, interrupt_params = add_interrupt_with_params(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_rise,
+        drop=False,
+        temp=temp,
+        duration_ratio=0.1,
+        n_smaller_interrupts=2,
+        non_overlap=True,
+        complex_iter=1
+    )
+
+    assert len(interrupt_params) >= 1, "At least one main interrupt should be added"
+    assert any(p['type'] == 'main' for p in interrupt_params), "One main interrupt should be present"
+    assert len([p for p in interrupt_params if p['type'] == 'small']) == 2, "Should have exactly 2 smaller interrupts"
+
+def test_add_interrupt_with_params_long_response(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
+    """
+    Test behavior when the entire signal is pre-occupied.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    # Block the entire signal length to simulate no space available.
+    modified_signal, interrupt_params = add_interrupt_with_params(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        INTERRUPT_RANGES=sample_interrupt_ranges_drop,
+        temp=temp,
+        duration_ratio=1.5,  # Long placement
+        non_overlap=True,
+        n_smaller_interrupts=2
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert len(interrupt_params) == 1, "Only one interrupt should be added"
+
+
+
+# --- Tests for add_interrupt_bursts ---
+
+def test_add_interrupt_bursts_with_drop_range(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
+    """
+    Test adding small interrupt bursts using the 'drop' range and validate clipping to device limits.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    device_min = sample_interrupt_ranges_drop[domain]['amplitude'][0]
+    device_max = sample_device_params[domain]['amplitude'][1]
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert np.any(modified_signal != base_signal), "Signal should be modified when bursts are added"
+
+    # Check amplitude boundaries (device-level limits)
+    assert np.min(modified_signal) >= device_min, f"Signal should not go below device minimum {device_min}"
+    assert np.max(modified_signal) <= device_max, f"Signal should not exceed device maximum {device_max}"
+
+
+def test_add_interrupt_bursts_with_rise_range(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
+    """
+    Test adding small interrupt bursts using the 'rise' range and validate clipping to device limits.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "high"
+
+    device_min = sample_device_params[domain]['amplitude'][0]
+    device_max = sample_interrupt_ranges_rise[domain]['amplitude'][1]
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert np.any(modified_signal != base_signal), "Signal should be modified when bursts are added"
+
+    # Check amplitude boundaries (device-level limits)
+    assert np.min(modified_signal) >= device_min, f"Signal should not go below device minimum {device_min}"
+    assert np.max(modified_signal) <= device_max, f"Signal should not exceed device maximum {device_max}"
+
+
+def test_add_interrupt_bursts_with_window(sample_time_vector, sample_device_params):
+    """
+    Test adding bursts within a specified time window.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    device_min = 0
+    device_max = 10
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp,
+        start_idx=200,
+        end_idx=800
+    )
+
+    # Check that only the specified region has changed
+    assert np.all(modified_signal[:200] == base_signal[:200]), "Before start_idx should be unchanged"
+    assert np.all(modified_signal[800:] == base_signal[800:]), "After end_idx should be unchanged"
+    assert np.any(modified_signal[200:800] != base_signal[200:800]), "Only the specified window should be affected"
+
+def test_add_interrupt_bursts_with_high_base_signal(sample_time_vector, sample_device_params):
+    """
+    Test adding bursts on top of a high-amplitude base signal.
+    """
+    t = sample_time_vector
+    domain = "DeviceA"
+    temp = "low"
+
+    device_min = 0
+    device_max = sample_device_params[domain]['amplitude'][1]
+
+    # Pre-fill base signal near the upper device boundary
+    base_signal = np.ones_like(t) * (0.8 * device_max)
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp
+    )
+
+    assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
+    assert np.any(modified_signal != base_signal), "Base signal should be modified when bursts are added"
+
+    # Validate boundaries (device-level limits)
+    assert np.min(modified_signal) >= device_min, f"Signal should not go below device minimum {device_min}"
+    assert np.max(modified_signal) <= device_max, f"Signal should not exceed device maximum {device_max}"
+
+
+def test_add_interrupt_bursts_with_no_interrupts(sample_time_vector, sample_device_params):
+    """
+    Test adding zero bursts (edge case).
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    device_min = 0
+    device_max = 10
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp,
+        n_small_interrupts=0
+    )
+
+    assert np.array_equal(modified_signal, base_signal), "Signal should remain unchanged if no interrupts are added"
+
+def test_add_interrupt_bursts_non_overlap_enforced(sample_time_vector, sample_device_params):
+    """
+    Test that small interrupts placed within a window respect non_overlap=True.
+    """
+    t = sample_time_vector
+    base_signal = np.zeros_like(t)
+    domain = "DeviceA"
+    temp = "low"
+
+    device_min, device_max = sample_device_params[domain]['amplitude']
+
+    # Define a narrow window for placement, so overlap risk increases
+    start_idx, end_idx = 400, 600
+
+    modified_signal = add_interrupt_bursts(
+        t=t,
+        base_signal=base_signal.copy(),
+        domain=domain,
+        DEVICE_RANGES=sample_device_params,
+        device_min=device_min,
+        device_max=device_max,
+        temp=temp,
+        start_idx=start_idx,
+        end_idx=end_idx,
+        n_small_interrupts=10,  # High count to force overlap checking
+        non_overlap=True
+    )
+
+    # Extract placed intervals to check for overlaps
+    placed_intervals = []
+    for i in range(start_idx, end_idx):
+        if modified_signal[i] != base_signal[i]:
+            if not placed_intervals or placed_intervals[-1][1] != i - 1:
+                placed_intervals.append([i, i])
+            else:
+                placed_intervals[-1][1] = i
+
+    # Ensure no overlaps (gaps between all placed intervals when non_overlap=True)
+    for (prev_end, next_start) in zip(placed_intervals[:-1], placed_intervals[1:]):
+        assert next_start[0] - prev_end[1] > 0, "Intervals should not overlap when non_overlap=True"
+
+    # Ensure final signal is within device limits
+    assert np.min(modified_signal) >= device_min, f"Signal should not go below device minimum {device_min}"
+    assert np.max(modified_signal) <= device_max, f"Signal should not exceed device maximum {device_max}"
