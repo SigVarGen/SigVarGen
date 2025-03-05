@@ -54,3 +54,7 @@ def sample_signal_length():
 def sample_time_vector():
     """Fixture to provide a standard time vector for tests."""
     return np.linspace(0, 1, 1000)
+
+@pytest.fixture
+def sample_wave():
+    return np.zeros(1000)
