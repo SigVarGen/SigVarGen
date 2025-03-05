@@ -1,6 +1,8 @@
 import numpy as np
 
 from SigVarGen.variations.transformations import *
+from SigVarGen.variations.baseline_drift import *
+
 
 def generate_parameter_variations(param_sweeps, num_variants=5, window_size=1):
     """
@@ -92,13 +94,25 @@ def generate_variation(transformed_wave, variant_params, t, n_sinusoids, amplitu
     """
 
     # Substitute part of the signal with signal generated with same parameters
-    transformed_wave = transform_wave_with_score(transformed_wave, variant_params['wave_with_score'], t, n_sinusoids, 
-                                                amplitude_range, base_frequency_range, interrupt_params)
-    
-    transformed_wave = apply_time_warp(transformed_wave, variant_params['time_warp'], t, 
-                                       n_sinusoids, amplitude_range, base_frequency_range)
-    
-    transformed_wave = apply_time_shift(transformed_wave, variant_params['time_shift'])
+    if variant_params['wave_with_score'] > 0:
+        print("!!!")
+        transformed_wave = transform_wave_with_score(
+            transformed_wave, 
+            variant_params['wave_with_score'], 
+            t, n_sinusoids, amplitude_range, base_frequency_range, 
+            interrupt_params
+        )
+
+    if variant_params['time_warp'] > 0:
+        transformed_wave = apply_time_warp(
+            transformed_wave, 
+            variant_params['time_warp'], 
+            t, n_sinusoids, amplitude_range, base_frequency_range
+        )
+
+    if variant_params['time_shift'] > 0:
+        transformed_wave = apply_time_shift(transformed_wave, variant_params['time_shift'])
+
 
     transformed_wave = apply_gain_variation(transformed_wave, variant_params['gain_variation'])
 

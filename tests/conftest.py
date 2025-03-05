@@ -58,3 +58,29 @@ def sample_time_vector():
 @pytest.fixture
 def sample_wave():
     return np.sin(np.linspace(0, 2 * np.pi, 1000))
+
+
+@pytest.fixture
+def sample_param_sweeps():
+    return {
+        'time_shift': np.arange(0, 50),
+        'time_warp': np.linspace(0.05, 0.2, 10),
+        'gain_variation': np.linspace(0.1, 0.5, 5),
+        'amplitude_modulation': np.linspace(0.2, 0.6, 5),
+        'modulation_with_region': np.linspace(0.2, 0.5, 5),
+        'baseline_drift': np.linspace(0.1, 0.5, 5),
+        'baseline_drift_region': np.linspace(0.1, 0.5, 5)
+    }
+
+@pytest.fixture
+def sample_interrupt_params():
+    return [{'start_idx': 300, 'duration_idx': 100}]
+
+@pytest.fixture
+def signal_generation_params():
+    """Example parameters needed for `generate_signal`."""
+    return {
+        'n_sinusoids': 5,
+        'amplitude_range': (0.1, 1.0),
+        'base_frequency_range': (10, 100)
+    }

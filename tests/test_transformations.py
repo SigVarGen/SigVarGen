@@ -8,7 +8,8 @@ from SigVarGen import (
     apply_baseline_drift,
     apply_amplitude_modulation_region,
     apply_nonlinear_distortion,
-    apply_quantization_noise
+    apply_quantization_noise,
+    transform_wave_with_score, generate_signal
 )
 
 def test_apply_time_shift(sample_wave):
@@ -136,3 +137,85 @@ def test_apply_quantization_noise(sample_wave):
     unique_values = np.unique(quantized_wave)
 
     assert all(np.isclose(unique_values % step_size, 0, atol=1e-5)), "Quantized values should align to step size"
+
+
+def test_transform_wave_with_score_zero_score(sample_wave, sample_time_vector, sample_interrupt_params, signal_generation_params):
+    """
+    Test that with score=0, the wave should remain unchanged.
+    """
+    score = 0.0  # No transformation should happen
+
+    transformed_wave = transform_wave_with_score(
+        sample_wave,
+        score,
+        sample_time_vector,
+        signal_generation_params['n_sinusoids'],
+        signal_generation_params['amplitude_range'],
+        signal_generation_params['base_frequency_range'],
+        sample_interrupt_params
+    )
+
+    assert np.array_equal(transformed_wave, sample_wave), "With score=0, the wave should remain unchanged"
+
+
+def test_transform_wave_with_score_basic(sample_wave, sample_time_vector, sample_interrupt_params, signal_generation_params):
+    """
+    Test that the transformation avoids replacing the defined interrupt region.
+    """
+    score = 0.6  # Moderate transformation
+
+    transformed_wave = transform_wave_with_score(
+        sample_wave,
+        score,
+        sample_time_vector,
+        signal_generation_params['n_sinusoids'],
+        signal_generation_params['amplitude_range'],
+        signal_generation_params['base_frequency_range'],
+        sample_interrupt_params
+    )
+
+    assert transformed_wave.shape == sample_wave.shape, "Wave length should remain unchanged"
+    assert not np.array_equal(transformed_wave, sample_wave), "High score should cause significant transformation"
+
+
+def test_transform_wave_with_score_low_score(sample_wave, sample_time_vector, sample_interrupt_params, signal_generation_params):
+    """
+    Test that with a low score, only a small part of the wave is replaced.
+    """
+    score = 0.2  # Very low transformation rate
+
+    transformed_wave = transform_wave_with_score(
+        sample_wave,
+        score,
+        sample_time_vector,
+        signal_generation_params['n_sinusoids'],
+        signal_generation_params['amplitude_range'],
+        signal_generation_params['base_frequency_range'],
+        sample_interrupt_params
+    )
+
+    num_differences = np.sum(transformed_wave != sample_wave)
+    assert num_differences > 0, "There should still be some replacement with non-zero score"
+    assert num_differences < len(sample_wave) * 0.3, "With low score, only a small portion should change"
+
+
+def test_transform_wave_with_score_edge_case_full_interrupt(sample_wave, sample_time_vector, signal_generation_params):
+    """
+    Test edge case where interrupt region covers the entire wave.
+    """
+    full_interrupt_params = [{'start_idx': 0, 'duration_idx': len(sample_wave)}]
+    score = 0.5  # Moderate transformation
+
+    transformed_wave = transform_wave_with_score(
+        sample_wave,
+        score,
+        sample_time_vector,
+        signal_generation_params['n_sinusoids'],
+        signal_generation_params['amplitude_range'],
+        signal_generation_params['base_frequency_range'],
+        full_interrupt_params
+    )
+
+    # If interrupt covers the whole wave, no transformation should occur
+    assert np.array_equal(transformed_wave, sample_wave), "Full interrupt coverage should block all transformation"
+
