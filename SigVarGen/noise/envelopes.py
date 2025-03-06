@@ -1,5 +1,7 @@
 import numpy as np
 
+from SigVarGen.variations.transformations import apply_time_shift
+
 def envelope_linear(num_samples, npw, param):
     start, end = npw
     envelope = np.linspace(start, end, num=num_samples)

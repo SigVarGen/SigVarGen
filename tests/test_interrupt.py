@@ -13,8 +13,9 @@ from SigVarGen import (
     add_interrupt_bursts
 )
 
-
-# --- Tests for get_non_overlapping_interval ---
+# -------------------------------------
+# Tests for get_non_overlapping_interval
+# -------------------------------------
 
 def test_get_non_overlapping_interval_no_conflict(sample_signal_length):
     """
@@ -52,8 +53,9 @@ def test_get_non_overlapping_interval_impossible():
     result = get_non_overlapping_interval(1000, 50, occupied)
     assert result is None, "Should return None when placement is impossible"
 
-
+# -------------------------------------
 # --- Tests for place_interrupt ---
+# -------------------------------------
 
 def test_place_interrupt_non_overlap(sample_signal_length):
     """
@@ -79,8 +81,9 @@ def test_place_interrupt_overlap_allowed(sample_signal_length):
     result = place_interrupt(sample_signal_length, 0.05, occupied, non_overlap=False)
     assert result != (None, None), "Function should return a valid interval when overlaps are allowed"
 
-
+# -------------------------------------
 # --- Tests for blend_signal ---
+# -------------------------------------
 
 def test_blend_signal():
     """
@@ -103,8 +106,9 @@ def test_blend_signal_weights():
 
     assert np.allclose(blended, 0.25 * base + 0.75 * interrupt), "Blended signal should respect custom blend factor"
 
-
-# --- Tests for apply_interrupt_modifications ---
+# -------------------------------------
+# Tests for apply_interrupt_modifications
+# -------------------------------------
 
 def test_apply_interrupt_modifications_rise():
     """
@@ -144,8 +148,9 @@ def test_apply_interrupt_modifications_with_drift():
     assert np.min(inter_mod) >= 0, "Modified signal minimum should stay within device bounds (with drift)"
     assert np.max(inter_mod) <= 1, "Modified signal maximum should stay within device bounds (with drift)"
 
-
-# --- Tests for generate_main_interrupt ---
+# -------------------------------------
+# Tests for generate_main_interrupt
+# -------------------------------------
 
 def test_generate_main_interrupt(sample_time_vector, sample_interrupt_ranges_drop):
     """
@@ -191,8 +196,9 @@ def test_generate_main_interrupt_amplitude_scaling(sample_time_vector, sample_in
         assert param["amp"] >= 0.2, "Amplitude should scale correctly (lower bound)"
         assert param["amp"] <= 1.0, "Amplitude should scale correctly (upper bound)"
 
-
+# -------------------------------------
 # --- Tests for add_main_interrupt ---
+# -------------------------------------
 
 def test_add_main_interrupt_basic(sample_time_vector, sample_device_params, sample_interrupt_ranges_rise):
     """
@@ -309,9 +315,9 @@ def test_add_main_interrupt_with_complex_iter(sample_time_vector, sample_device_
     assert all('sinusoids_params' in p for p in interrupt_params), "Each interrupt should have sinusoid parameters"
     assert np.any(modified_signal != base_signal), "Signal should be modified"
 
-
-
-# --- Tests for add_smaller_interrupts --- 
+# -------------------------------------
+# Tests for add_smaller_interrupts
+# -------------------------------------
 
 def test_add_smaller_interrupts_basic(sample_time_vector, sample_interrupt_ranges_rise):
     """
@@ -458,8 +464,9 @@ def test_add_multiple_smaller_interrupts(sample_time_vector, sample_interrupt_ra
     assert len(occupied_intervals) == 3, "Three intervals should be occupied"
     assert all(p['type'] == 'small' for p in interrupt_params), "All interrupts should be classified as 'small'"
 
-
-# --- Tests for add_interrupt_with_params ---
+# -------------------------------------
+# Tests for add_interrupt_with_params
+# -------------------------------------
 
 def test_add_interrupt_with_params_basic(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
     """
@@ -537,9 +544,9 @@ def test_add_interrupt_with_params_long_response(sample_time_vector, sample_devi
     assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
     assert len(interrupt_params) == 1, "Only one interrupt should be added"
 
-
-
+# -------------------------------------
 # --- Tests for add_interrupt_bursts ---
+# -------------------------------------
 
 def test_add_interrupt_bursts_with_drop_range(sample_time_vector, sample_device_params, sample_interrupt_ranges_drop):
     """

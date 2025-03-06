@@ -2,6 +2,9 @@ import numpy as np
 import pytest
 from SigVarGen import add_periodic_interrupts, generate_semi_periodic_signal
 
+# -------------------------------------
+# Tests for add_periodic_interrupts
+# -------------------------------------
 
 def test_add_periodic_interrupts_basic(sample_time_vector):
     """
@@ -170,3 +173,7 @@ def test_add_periodic_interrupts_with_random_amplitude(sample_time_vector):
     # Since amplitude scaling has randomness, we can't assert exact values, but we can check ranges
     assert np.max(modified_signal) <= 1, "Max amplitude should be within boundaries"
     assert np.min(modified_signal) >= 0, "Min amplitude should be within boundaries"
+
+# -------------------------------------
+# Tests for generate_semi_periodic_signal
+# -------------------------------------

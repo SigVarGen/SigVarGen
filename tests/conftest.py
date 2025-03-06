@@ -59,6 +59,10 @@ def sample_time_vector():
 def sample_wave():
     return np.sin(np.linspace(0, 2 * np.pi, 1000))
 
+@pytest.fixture
+def zero_wave():
+    return np.zeros(1000)
+
 
 @pytest.fixture
 def sample_param_sweeps():

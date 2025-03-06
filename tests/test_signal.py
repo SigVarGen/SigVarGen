@@ -2,6 +2,10 @@ import numpy as np
 import pytest
 from SigVarGen import generate_signal
 
+# -------------------------------------
+# Tests for generate_signal
+# -------------------------------------
+
 def test_generate_signal_output_shape(sample_time_vector):
     """Check that the generated signal has the correct shape."""
     signal, params = generate_signal(sample_time_vector, 5, (0.1, 1.0), (5, 50))
