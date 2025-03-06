@@ -54,7 +54,7 @@ def test_add_colored_noise_basic(zero_wave, color):
     npw = (0.8, 1.2)     # (not used in current code, but still provided)
     mf = (1.0, 1.0)      # fixed modulation factor (i.e. 1)
     
-    res = add_colored_noise(zero_wave, noise_power, npw, mf, color=color, plot=False)
+    res = add_colored_noise(zero_wave, noise_power, npw, mf, color=color)
     assert res.shape == zero_wave.shape, "Output wave shape should match input wave shape."
     # Since input wave is zero, res equals noise. Its RMS should be approximately sqrt(noise_power).
     rms = np.sqrt(np.mean(res**2))
@@ -76,8 +76,8 @@ def test_add_colored_noise_with_mod_envelope(zero_wave):
         'param': (1,1)  
     }
     
-    res_no_env = add_colored_noise(zero_wave, noise_power, npw, mf, color='pink', plot=False, mod_envelope=None)
-    res_with_env = add_colored_noise(zero_wave, noise_power, npw, mf, color='pink', plot=False, mod_envelope=mod_env)
+    res_no_env = add_colored_noise(zero_wave, noise_power, npw, mf, color='pink', mod_envelope=None)
+    res_with_env = add_colored_noise(zero_wave, noise_power, npw, mf, color='pink', mod_envelope=mod_env)
     
     # The two outputs should be different because the noise is multiplied by a non-constant envelope.
     assert not np.allclose(res_no_env, res_with_env), "Output with mod envelope should differ from without it."

@@ -11,7 +11,7 @@ def calculate_noise_power(start_mV, stop_mV, step_mV):
         data.append((mV, sigma_V, noise_power))
     return data
 
-def add_colored_noise(wave, noise_power, npw, mf, color='pink', plot=False, mod_envelope=None):
+def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=None):
     """
     Add colored noise (white, pink, or brown) to a signal.
 
@@ -21,7 +21,6 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', plot=False, mod_
     - npw: Tuple specifying the range over which to vary the noise power (relative to noise_power).
     - mf: Tuple specifying the modulation factor range to slightly vary the amplitude of the signal.
     - color: Type of noise to add ('white', 'pink', 'brown'). Default is 'pink'.
-    - plot: Boolean indicating whether to plot the noise. Default is False.
     - mod_envelope: Dictionary {'func': envelope_sine, 'param': [0.0001, 0.01]}
 
     Returns:
@@ -84,16 +83,5 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', plot=False, mod_
 
     modulation_factor = np.random.uniform(*mf)
     res = (wave * modulation_factor) + noise
-
-    # Optional plotting
-    if plot:
-        plt.figure(figsize=(50, 5))
-        plt.plot(range(len(res)), res, label=f'{color} Noise')
-        plt.title(f'{color} Noise')
-        plt.xlabel('Sample')
-        plt.ylabel('Amplitude')
-        plt.legend()
-        #plt.grid(True)
-        plt.show()
 
     return res
