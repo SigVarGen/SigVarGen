@@ -58,7 +58,7 @@ def generate_semi_periodic_signal(length=450, base_pattern=None, flip_probabilit
     
     return np.array([round(i) for i in interpoling(signal, target_len=length)])
 
-def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, start_idx, duration_idx, length=450, base_pattern=None, base_pattern_2=None, flip_probability=0.1, flip_probability_2=0.1):
+def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, start_idx, duration_idx, length=450, base_pattern=None, base_pattern_2=None, flip_probability=0.1, flip_probability_2=0.1, offset=0):
 
     """
     Add periodic digital interruptions to a continuous base signal.
@@ -112,16 +112,18 @@ def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, sta
 
     dig_sig2 = generate_semi_periodic_signal(length=length, base_pattern=base_pattern_2, flip_probability=flip_probability_2)
 
-    offset1 = (offset//1.3)*dig_sig1
-    interrupts = (inter_sig.copy() * dig_sig1)-offset1
+    offset1 = (offset/1.3)*dig_sig1
+    interrupts = (inter_sig.copy() * dig_sig1)
 
-    base_signal[:start_idx] = 0.5*base_signal[:start_idx] + 0.5*interrupts[:start_idx]
-    base_signal[start_idx+duration_idx:] = 0.5*base_signal[start_idx+duration_idx:] + 0.5*interrupts[start_idx+duration_idx:]
+    base_signal[:start_idx] = base_signal[:start_idx] + interrupts[:start_idx]
+    base_signal[start_idx+duration_idx:] = base_signal[start_idx+duration_idx:] + interrupts[start_idx+duration_idx:]
 
-    rand1 = random.uniform(offset//1.6, offset//1.85)
+    rand1 = random.uniform(offset/1.6, offset/1.85)
     offset2 = (rand1)*dig_sig2
-    interrupts = (inter_sig.copy() * dig_sig2)-offset2
+    interrupts = (inter_sig.copy() * dig_sig2)
 
-    base_signal[start_idx:start_idx+duration_idx] = 0.5*base_signal[start_idx:start_idx+duration_idx] + 0.5*interrupts[start_idx:start_idx+duration_idx]
+    base_signal[start_idx:start_idx+duration_idx] = base_signal[start_idx:start_idx+duration_idx] + interrupts[start_idx:start_idx+duration_idx]
+
+    base_signal = np.clip(base_signal, amplitude_range[0], amplitude_range[1])
 
     return base_signal
