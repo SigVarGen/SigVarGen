@@ -58,7 +58,7 @@ def generate_semi_periodic_signal(length=450, base_pattern=None, flip_probabilit
     
     return np.array([round(i) for i in interpoling(signal, target_len=length)])
 
-def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, start_idx, duration_idx, length=450, a=(1.7,2)):
+def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, start_idx, duration_idx, length=450, base_pattern=None, base_pattern_2=None, flip_probability=0.1, flip_probability_2=0.1):
 
     """
     Add periodic digital interruptions to a continuous base signal.
@@ -84,8 +84,10 @@ def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, sta
         The duration (in samples) of the main interruption.
     length : int, optional
         The length of the default periodic signal if `func` is None (default: 450).
-    a : tuple (int, int), optional
-        Increase length by random number in provided range, making density of bursts higher
+    base_pattern, base_pattern_2 : list of int, optional
+        A binary list representing the repeating base pattern. If None, defaults to `[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]`.
+    flip_probability, flip_probability_2 : float, optional
+        The probability of flipping each bit in the signal (default: 0.1).
 
     Returns:
     -------
@@ -104,25 +106,22 @@ def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, offset, sta
     ------
     - The first phase of interruptions affects the signal **before and after** `start_idx` to `start_idx + duration_idx`.
     - The second phase introduces modulated interruptions **within the specified range**.
-    - If `func` is provided, it should return a binary (0/1) periodic pattern of the desired length.
     """
 
-    dig_sig1 = generate_semi_periodic_signal(length=length)
-    dig_sig2 = generate_semi_periodic_signal(length=length)
+    dig_sig1 = generate_semi_periodic_signal(length=length, base_pattern=base_pattern, flip_probability=flip_probability)
+
+    dig_sig2 = generate_semi_periodic_signal(length=length, base_pattern=base_pattern_2, flip_probability=flip_probability_2)
 
     offset1 = (offset//1.3)*dig_sig1
     interrupts = (inter_sig.copy() * dig_sig1)-offset1
 
-    base_signal[:start_idx] += interrupts[:start_idx]
-    base_signal[start_idx+duration_idx:] += interrupts[start_idx+duration_idx:]
+    base_signal[:start_idx] = 0.5*base_signal[:start_idx] + 0.5*interrupts[:start_idx]
+    base_signal[start_idx+duration_idx:] = 0.5*base_signal[start_idx+duration_idx:] + 0.5*interrupts[start_idx+duration_idx:]
 
     rand1 = random.uniform(offset//1.6, offset//1.85)
     offset2 = (rand1)*dig_sig2
     interrupts = (inter_sig.copy() * dig_sig2)-offset2
 
-    base_signal[start_idx:start_idx+duration_idx] += interrupts[start_idx:start_idx+duration_idx]
-
-    A_min, A_max = amplitude_range
-    base_signal = ((base_signal + 1) / 2) * (A_max - A_min) + A_min
+    base_signal[start_idx:start_idx+duration_idx] = 0.5*base_signal[start_idx:start_idx+duration_idx] + 0.5*interrupts[start_idx:start_idx+duration_idx]
 
     return base_signal
