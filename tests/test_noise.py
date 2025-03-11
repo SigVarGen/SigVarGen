@@ -132,7 +132,7 @@ def test_envelope_linear():
     num_samples = 10
     npw_range = (0, 1)
     # param is not used for envelope_linear.
-    env = envelope_linear(num_samples, npw_range, param=None)
+    env = envelope_linear(num_samples, npw_range, param=True)
     expected = np.linspace(npw_range[0], npw_range[1], num_samples)
     assert env.shape[0] == num_samples, "Envelope length mismatch."
     assert np.allclose(env, expected, atol=1e-8), "Envelope values do not match expected linear ramp."

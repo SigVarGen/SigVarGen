@@ -82,7 +82,7 @@ param_sweeps = {
     }
 }
 
-noise_funcs = [None, {'func': envelope_linear, 'param': [1, 1]}, {'func': envelope_sine, 'param': [0.0001, 0.01]}, {'func': envelope_random_walk, 'param': [0.01, 0.15]}, {'func': envelope_blockwise, 'param': [50, 1000]}]
+noise_funcs = [None, {'func': envelope_linear, 'param': [True, False]}, {'func': envelope_sine, 'param': [0.0001, 0.01]}, {'func': envelope_random_walk, 'param': [0.01, 0.15]}, {'func': envelope_blockwise, 'param': [50, 1000]}]
 
 npw_levels = [[1, 1], [0.9, 1.1], [0.85, 1.2], [0.8, 1.3], [0.75, 1.4], [0.7, 1.5], [0.65, 1.6], [0.6, 1.7]]
 mf_levels = [[0.75, 0.85], [0.8, 0.9], [1, 1], [1.0, 1.1], [1.0, 1.2]]

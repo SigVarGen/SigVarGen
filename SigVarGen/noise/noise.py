@@ -113,7 +113,8 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
     else:
         func = mod_envelope['func']
         pm = np.random.uniform(mod_envelope['param'][0], mod_envelope['param'][1])
-        env = func(num_samples=len(wave), npw=npw, param=pm)
+        amp = (min(wave), max(wave))
+        env = func(num_samples=len(wave), npw=amp, param=pm)
         noise = noise * env # Ensure the envelope is the same length
 
     modulation_factor = np.random.uniform(*mf)

@@ -4,7 +4,10 @@ from SigVarGen.variations.transformations import apply_time_shift
 
 def envelope_linear(num_samples, npw, param):
     start, end = npw
-    envelope = np.linspace(start, end, num=num_samples)
+    if param > 0.5:
+        envelope = np.linspace(start, end, num=num_samples)
+    else:
+        envelope = np.linspace(end, start, num=num_samples)
     return envelope
 
 def envelope_sine(num_samples, npw, param=0.005):
