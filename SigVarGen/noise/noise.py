@@ -120,4 +120,4 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
     modulation_factor = np.random.uniform(*mf)
     res = (wave * modulation_factor) + noise
 
-    return res
+    return res, noise
