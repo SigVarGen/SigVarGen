@@ -1,15 +1,85 @@
 import numpy as np
 
-def calculate_noise_power(start_mV, stop_mV, step_mV):
+def get_conversion_factor(max_amp, threshold=0.1):
     """
-    Function to calculate noise power (σ²)
+    Determines the unit conversion based on the device's maximum amplitude.
     """
-    data = []
-    for mV in range(start_mV, stop_mV + step_mV, step_mV):
-        sigma_V = mV / 1000  # Convert mV to V
+    if max_amp < threshold:
+        return 1e6, "µV"  # Use microvolts for low amplitude devices
+    else:
+        return 1e3, "mV"  # Otherwise, use millivolts
+
+def dynamic_noise_fraction(interrupt_range, domain, base_fraction=0.01, low_amp_threshold=0.1, k=8):
+    """
+    Computes a dynamic noise fraction using an exponential decay.
+    
+    For devices with max_amp below low_amp_threshold, the noise fraction is:
+      noise_fraction = base_fraction * exp(-k * (low_amp_threshold - max_amp) / low_amp_threshold)
+      
+    The parameter 'k' controls how aggressively the fraction decays.
+    """
+    min_amp, max_amp = interrupt_range[domain]['amplitude']
+    if max_amp < low_amp_threshold:
+        scale = np.exp(-k * (low_amp_threshold - max_amp) / low_amp_threshold)
+        return base_fraction * scale
+    else:
+        return base_fraction
+
+def get_noise_params(interrupt_range, domain, noise_fraction=None, steps=10):
+    """
+    Computes noise level parameters using a dynamic noise fraction.
+    
+    Unlike before, this version does not force a minimum noise range
+    and instead works in continuous (floating-point) space.
+    
+    Returns:
+      - start_val: starting value of the noise range
+      - stop_val: end value of the noise range
+      - step_val: increment for the noise levels
+      - unit: unit for the noise (mV/µV)
+      - noise_fraction: the computed (or provided) noise fraction
+    """
+    if noise_fraction is None:
+        noise_fraction = dynamic_noise_fraction(interrupt_range, domain)
+    
+    min_amp, max_amp = interrupt_range[domain]['amplitude']
+    conv_factor, unit = get_conversion_factor(max_amp)
+    
+    # Convert amplitudes without forcing a minimum of 1.
+    min_val = min_amp * conv_factor
+    max_val = max_amp * conv_factor
+
+    # Compute noise_range as a continuous value.
+    noise_range = (max_val - min_val) * noise_fraction
+
+    # Compute step size as a fraction of the noise_range.
+    step_val = noise_range / steps if noise_range != 0 else 0
+
+    # Use the midpoint of the noise range for starting point.
+    start_val = min_val + noise_range / 2
+
+    return start_val, start_val + noise_range, step_val, unit, noise_fraction
+
+def calculate_noise_power(start_value, stop_value, step_value, unit="mV", noise_fraction=0.01):
+    """
+    Calculates noise power based on the noise level range and the provided noise fraction.
+    
+    Returns a list of tuples with:
+      (noise level in unit, sigma in V, noise power (variance))
+    """
+    conversion_factors = {"mV": 1e3, "µV": 1e6}
+    conv_factor = conversion_factors[unit]
+    
+    noise_levels = []
+    val = start_value
+    while val <= stop_value:
+        sigma_V = (val / conv_factor) * noise_fraction
         noise_power = sigma_V ** 2
-        data.append((mV, sigma_V, noise_power))
-    return data
+        noise_levels.append((val, sigma_V, noise_power))
+        val += step_value
+
+    return noise_levels
+
 
 def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=None):
     """
@@ -28,7 +98,7 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
     """
 
     # Determine noise power within the specified range
-    noise_pw = noise_power # * np.random.uniform(*npw)
+    noise_pw = np.sqrt(noise_power) #np.sqrt ???  # * np.random.uniform(*npw)
     
     # Generate white noise
     white_noise = np.random.normal(0, 1, size=len(wave))
