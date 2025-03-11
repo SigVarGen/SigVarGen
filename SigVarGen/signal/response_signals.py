@@ -312,7 +312,7 @@ def add_main_interrupt(
     # Apply modifications (offset, drift)
     base_slice = base_signal[start_idx:end_idx]
 
-    if base_slice.size == 0 or inter_part_raw.size == 0:
+    if base_slice.size <= 1 or inter_part_raw.size <= 1:
         return base_signal, [], occupied_intervals
 
     inter_part_modified, offset_val = apply_interrupt_modifications(
@@ -565,6 +565,9 @@ def add_smaller_interrupts(
         # Slice the relevant section of both base and generated signal
         base_slice = base_signal[start_idx:end_idx]
         s_inter_raw = small_interrupt_signal[start_idx:end_idx]
+
+        if base_slice.size <= 1 or s_inter_raw.size <= 1:
+            return base_signal, []
 
         # Apply signal modifications (e.g., dispersal, offset shift, clipping to device limits)
         s_inter_modified, s_offset = apply_interrupt_modifications(
