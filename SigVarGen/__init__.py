@@ -9,7 +9,7 @@ from .utils import *
 
 __all__ = ['noise', 'signal', 'variations'
             'envelope_linear', 'envelope_sine', 'envelope_random_walk', 'envelope_blockwise',
-            'get_noise_params', 'calculate_noise_power', 'add_colored_noise',
+            'generate_noise_power', 'add_colored_noise',
             'get_non_overlapping_interval', 'place_interrupt', 'apply_interrupt_modifications', 
             'blend_signal', 'generate_main_interrupt', 'add_complexity_to_inter',
             'add_main_interrupt', 'add_smaller_interrupts', 'add_interrupt_with_params', 'add_interrupt_bursts',
