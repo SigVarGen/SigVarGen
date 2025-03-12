@@ -211,6 +211,12 @@ def transform_wave_with_score(original_wave, score, t, n_sinusoids, amplitude_ra
     -------
     numpy.ndarray
         The transformed waveform.
+    
+    Example:
+    -------
+    >>> transformed_wave = transform_wave_with_score(wave, 0.5, t, n_sinusoids=10, 
+                            amplitude_range=(0,1), base_frequency_range=(70, 75), 
+                            interrupt_params=None)
     """
     generated_wave, _ = generate_signal(t, n_sinusoids, amplitude_range, base_frequency_range)
 

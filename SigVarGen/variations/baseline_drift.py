@@ -137,11 +137,7 @@ def apply_baseline_drift_quadratic(wave, max_drift, reversed=False):
     # Pick a final drift value randomly within [-max_drift, max_drift]
     final_value = np.random.uniform(-max_drift, max_drift)
 
-    # Construct a quadratic drift:
-    #    - If not reversed: drift(0) = 0, drift(1) = final_value
-    #      a simple form is final_value * t^2
-    #    - If reversed: drift(0) = final_value, drift(1) = 0
-    #      a simple form is final_value * (1 - t)^2
+    # Construct a quadratic drift
     if not reversed:
         drift = final_value * (t**2)
     else:
