@@ -4,14 +4,14 @@ Thank you for considering contributing to **SigVarGen**! We welcome contribution
 
 ---
 
-## 📌 **Issue Tracking & Discussion**
+## **Issue Tracking & Discussion**
 - Before submitting a **new feature request or bug report**, check if an issue already exists.
 - Use labels (`bug`, `enhancement`, `documentation`, etc.) when opening issues.
 - For questions, start a discussion in the **Discussions** tab.
 
 ---
 
-## 📌 **Getting Started**  
+## **Getting Started**  
 ### **1. Fork the Repository**  
 1. Navigate to the **SigVarGen** repository:  
    ```bash
@@ -46,7 +46,7 @@ Thank you for considering contributing to **SigVarGen**! We welcome contribution
 
 ---
 
-## 📌 **Commit Message Guidelines**  
+## **Commit Message Guidelines**  
 
 Use a structured **commit message format**:  
 ```
@@ -66,7 +66,7 @@ Use a structured **commit message format**:
 
 ---
 
-## 📌 **Testing**
+## **Testing**
 - Ensure all tests pass before submitting a PR.
 - Run unit tests using **pytest**:
    ```bash
@@ -76,7 +76,7 @@ Use a structured **commit message format**:
 
 ---
 
-## 📌 **License**
+## **License**
 By contributing to SigVarGen, you agree that your contributions will be licensed under the project's [MIT License](../LICENSE).
 
 ---
