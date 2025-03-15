@@ -12,13 +12,9 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 ## Key Features
 
 - **Signal Generation**: Synthesizes complex 1D signals by combining multiple sinusoidal components, providing realistic baseline idle signals.
-- **Interrupting Signal Generation and Addition**: Synthesizes interrupting 1D signal and blend into original signal, mimicking real-world anomalies such as sensor glitches, external perturbations, or event-driven variations.
+- **Interrupting Signal Generation, Scheduling and Addition**: Synthesizes interrupting 1D signal and blend into original signal, mimicking real-world anomalies such as sensor glitches, external perturbations, or event-driven variations.
 - **Variation and Augmentation**: Generates diverse signal variants by systematically altering signal parameters and applying a range of transformations, such as time shifting, warping, gain variation, amplitude modulation, and baseline drift.
 - **Noise Generation and Addition**: Supports the addition of various types of noise (e.g., white / colored, and stationary / non-stationary noise) to the generated signals, mimicking real-world interference.
-- **Helper Modules**:
-  - **Configure**: Contains example parameters for device ranges, variation functions, and noise modulation envelopes.
-  - **Utils**: Provides common utility functions such as Euclidean distance calculation, normalization, interpolation, and dividing device parameters into subranges for idle periods or in response to events.
-- **Datasets**: Previously generated datasets through framework/
 
 ---
 
@@ -69,8 +65,8 @@ Comprehensive documentation is available on our [documentation site](https://git
 - **Noise Generation and Addition**: Contains functions to generate various noise types and to integrate noise into synthetic signals, emulating real-world conditions.
 
 ### Helper Modules
-- **Configure**: Supplies configuration templates, including example parameters for device ranges, variation functions, and noise modulation envelopes.
-- **Utils**: Offers utility functions such as Euclidean distance, normalisation, interpolation, and methods for dividing device parameters into subranges based on specific conditions.
+- **Configure**: Contains example parameters for device ranges, variation functions, and noise modulation envelopes.
+- **Utils**: Provides common utility functions such as Euclidean distance calculation, normalization, interpolation, and dividing device parameters into subranges for idle periods or in response to events.
 - **Datasets**: Short samples from previously generated datasets.
 
 ---
