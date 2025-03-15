@@ -708,7 +708,8 @@ def add_interrupt_bursts(
     start_idx=0,
     end_idx=0,
     n_small_interrupts=None,
-    non_overlap=False
+    non_overlap=False,
+    small_duration_ratio_range=None
 ):
     """
     Add multiple small interrupts to the signal within a specified time window.
@@ -760,7 +761,7 @@ def add_interrupt_bursts(
         # Generate a small interrupt signal (full signal length)
         n_sinusoids = random.randint(2, 10)
         small_interrupt_signal, small_interrupt_sinusoids_params = generate_signal(
-            t, n_sinusoids, (0.7 * burst_range['amplitude'][1], 0.9 * burst_range['amplitude'][1]), burst_frequency_range
+            t, n_sinusoids, (1 * burst_range['amplitude'][1], 1 * burst_range['amplitude'][1]), burst_frequency_range
         )
 
         # Convert global occupied intervals to local (within the window)
@@ -771,7 +772,10 @@ def add_interrupt_bursts(
         ]
 
         # Place within the window
-        small_duration_ratio = random.uniform(0.001, 0.003)
+        if small_duration_ratio_range == None:
+            small_duration_ratio = random.uniform(0.001, 0.005)
+        else:
+            small_duration_ratio = random.uniform(small_duration_ratio_range[0],small_duration_ratio_range[1])
         local_start_idx, local_end_idx = place_interrupt(
             end_idx - start_idx,
             small_duration_ratio,
@@ -800,7 +804,7 @@ def add_interrupt_bursts(
             s_inter_part -= s_offset
 
         # Apply to base signal
-        base_signal[actual_start_idx:actual_end_idx] += s_inter_part
+        base_signal[actual_start_idx:actual_end_idx] = blend_signal(base_signal[actual_start_idx:actual_end_idx], s_inter_part)
 
         # Track this interval globally
         occupied_intervals.append((actual_start_idx, actual_end_idx))
