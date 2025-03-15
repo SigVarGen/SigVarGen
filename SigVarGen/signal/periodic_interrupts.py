@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from SigVarGen.utils import interpoling
+#from SigVarGen.utils import interpoling
 
 def generate_semi_periodic_signal(length=450, base_pattern=None, flip_probability=0.1, seed=None):
 
@@ -56,7 +56,7 @@ def generate_semi_periodic_signal(length=450, base_pattern=None, flip_probabilit
     # Flip the bits where random_flips is True
     signal[random_flips] = 1 - signal[random_flips]
     
-    return np.array([round(i) for i in interpoling(signal, target_len=length)])
+    return signal #np.array([round(i) for i in interpoling(signal, target_len=length)])
 
 def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, start_idx, duration_idx, length=450, base_pattern=None, base_pattern_2=None, flip_probability=0.1, flip_probability_2=0.1, offset=0):
 
