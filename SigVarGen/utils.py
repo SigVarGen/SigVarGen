@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-def calculate_CP(signal, noisy_signal):
+def calculate_SNR(signal, noisy_signal):
     noise = noisy_signal - signal
     signal_power = np.abs(np.mean(signal ** 2))
     noise_power = np.abs(np.mean(noise ** 2))

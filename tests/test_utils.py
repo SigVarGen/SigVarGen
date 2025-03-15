@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from SigVarGen.utils import generate_device_parameters, calculate_ED, calculate_CP, interpoling, normalization
+from SigVarGen.utils import generate_device_parameters, calculate_ED, calculate_SNR, interpoling, normalization
 
 def test_basic_split(sample_device_params):
     lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratio=0.5)
@@ -67,12 +67,12 @@ def test_euclidean_distance():
 
 import numpy as np
 import pytest
-from SigVarGen.utils import calculate_CP, interpoling, normalization
+from SigVarGen.utils import calculate_SNR, interpoling, normalization
 
-def test_calculate_CP():
+def test_calculate_SNR():
     signal = np.ones(100)
     noisy_signal = signal + np.random.normal(0, 0.1, size=100)
-    cp = calculate_CP(signal, noisy_signal)
+    cp = calculate_SNR(signal, noisy_signal)
     assert cp > 0  # Basic check: CP should be > 0 if noise is present but signal dominates
 
 def test_interpoling():

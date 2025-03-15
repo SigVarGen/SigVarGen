@@ -23,5 +23,5 @@ __all__ = ['noise', 'signal', 'variations'
             'apply_nonlinear_distortion', 'apply_quantization_noise',
             'EMBEDDED_DEVICE_RANGES', 'EMBEDDED_DEVICE_INTERRUPTS', 'param_sweeps',
             'noise_funcs', 'npw_levels', 'mf_levels',
-            'calculate_CP', 'calculate_ED', 'interpoling', 'normalization',
+            'calculate_SNR', 'calculate_ED', 'interpoling', 'normalization',
             'generate_device_parameters']

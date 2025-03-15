@@ -8,7 +8,7 @@ version = "0.0.1"
 authors = [
   { name="SigVarGen developers", email="ovakulenko@uwaterloo.ca" }
 ]
-description = "Python library for generating signal variations."
+description = "Python framework designed to create multiple variants of an idle-state signals and signals affected by external perturbations under the same environmental conditions."
 readme = "README.md"
 requires-python = ">=3.8"
 
