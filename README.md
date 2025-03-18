@@ -10,7 +10,7 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 - **Documentation**: [Documentation Site](https://sigvargen.github.io/SigVarGen/)
 - **Functions Overview**: [Modules](https://sigvargen.github.io/SigVarGen/modules/)
 - **Tutorials**: [Tutorials](./tutorials)
-- **Dataset Examples**: [Datasets][./datasets]
+- **Dataset Examples**: [Datasets](./datasets)
 - **Contributing**: [Contributing Guidelines](./doc/contributing.md)
 - **Bug reports**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)
 
