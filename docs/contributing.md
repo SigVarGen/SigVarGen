@@ -77,7 +77,7 @@ Use a structured **commit message format**:
 ---
 
 ## **License**
-By contributing to SigVarGen, you agree that your contributions will be licensed under the project's [MIT License](../LICENSE).
+By contributing to SigVarGen, you agree that your contributions will be licensed under the project's [MIT License](https://github.com/SigVarGen/SigVarGen/blob/main/LICENSE).
 
 ---
 

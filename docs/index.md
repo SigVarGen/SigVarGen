@@ -7,7 +7,7 @@ This framework designed to create **multiple variants** of a base **1D signal** 
 ## Documentation Overview:
 
 - [Getting Started](getting_started.md)
-- [Installation and Dependencies](getting-started.md#installation)
+- [Installation and Dependencies](getting_started.md#installation-instructions)
 - [Modules Overview](modules.md)
 - [Contributing Guidelines](contributing.md)
 
@@ -16,5 +16,5 @@ This framework designed to create **multiple variants** of a base **1D signal** 
 
 - [GitHub Repository](https://github.com/SigVarGen/SigVarGen)
 - [Issues](https://github.com/SigVarGen/SigVarGen/issues)
-- [License](../LICENSE)
+- [License](https://github.com/SigVarGen/SigVarGen/blob/main/LICENSE)
 - [Tutorials](https://github.com/SigVarGen/SigVarGen/tree/main/tutorials)

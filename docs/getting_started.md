@@ -14,7 +14,7 @@ This guide outlines the installation process and environment requirements for us
 
 Dependencies are managed using a standardized `pyproject.toml`.
 
-### Installation Instructions:
+## Installation Instructions
 
 Clone and install dependencies:
 
@@ -22,3 +22,4 @@ Clone and install dependencies:
 git clone https://github.com/SigVarGen/SigVarGen.git
 cd SigVarGen
 pip install ./
+```

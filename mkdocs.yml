@@ -1,0 +1,88 @@
+site_name: SigVarGen Documentation
+site_url: https://sigvargen.github.io/SigVarGen/
+repo_url: https://github.com/SigVarGen/SigVarGen
+repo_name: SigVarGen/SigVarGen
+edit_uri: blob/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.highlight
+    - search.suggest
+    - toc.integrate
+    - content.tabs.link
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting_started.md
+  - Modules:
+      - Overview: modules.md
+      - Signal Generation and Perturbation Scheduling:
+          - Signal Module: signal.md
+          - generate_signal: functions/signal/1generate_signal.md
+          - get_non_overlapping_interval: functions/signal/2get_non_overlapping_interval.md
+          - place_interrupt: functions/signal/3place_interrupt.md
+          - blend_signal: functions/signal/4blend_signal.md
+          - apply_interrupt_modifications: functions/signal/5apply_interrupt_modifications.md
+          - generate_main_interrupt: functions/signal/6generate_main_interrupt.md
+          - add_main_interrupt: functions/signal/7add_main_interrupt.md
+          - add_smaller_interrupts: functions/signal/9add_smaller_interrupts.md
+          - add_interrupt_with_params: functions/signal/10add_interrupt_with_params.md
+          - add_interrupt_bursts: functions/signal/11add_interrupt_bursts.md
+          - generate_semi_periodic_signal: functions/signal/12generate_semi_periodic_signal.md
+          - add_periodic_interrupts: functions/signal/13add_periodic_interrupts.md
+      - Noise Generation and Addition:
+          - Noise Module: noise.md
+          - generate_noise_power: functions/noise/1generate_noise_power.md
+          - add_colored_noise: functions/noise/2add_colored_noise.md
+          - envelopes: functions/noise/3envelopes.md
+      - Signal Variations and Augmentation:
+          - Variations Module: variations.md
+          - generate_parameter_variations: functions/variations/1generate_parameter_variations.md
+          - generate_variation: functions/variations/2generate_variation.md
+          - apply_time_shift: functions/variations/3apply_time_shift.md
+          - apply_time_warp: functions/variations/4apply_time_warp.md
+          - apply_gain_variation: functions/variations/5apply_gain_variation.md
+          - apply_amplitude_modulation: functions/variations/6apply_amplitude_modulation.md
+          - apply_amplitude_modulation_region: functions/variations/7apply_amplitude_modulation_region.md
+          - apply_baseline_drift: functions/variations/8apply_baseline_drift.md
+          - regional baseline_drifts: functions/variations/9regional_baseline_drifts.md
+          - transform_wave_with_score: functions/variations/10transform_wave_with_score.md
+          - apply_quantization_noise: functions/variations/11apply_quantization_noise.md
+      - Configuration:
+          - Config Module: config.md
+      - Utils:
+          - Utils Module: utils.md
+  - Contributing: contributing.md
+  - License: https://github.com/SigVarGen/SigVarGen/blob/main/LICENSE
+  - Tutorials: https://github.com/SigVarGen/SigVarGen/tree/main/tutorials
+
+plugins:
+  - search
+
+markdown_extensions:
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/SigVarGen/SigVarGen
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/SigVarGen/

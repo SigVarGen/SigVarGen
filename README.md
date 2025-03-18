@@ -2,7 +2,8 @@
 
 SigVarGen is a Python framework designed to create **multiple variants** of a base **1D signal** under the same environmental conditions. It allows the simulation of both **idle-state signals** and signals affected by **external perturbations**, enabling robust testing of algorithms in dynamic environments based on multiple measurements of the same event. Framework is suitable for **time-series analysis**, **signal processing**, and **synthetic data generation** in various domains such as sensor data modeling, embedded systems testing, and machine learning.
 
-- **Documentation**: [Documentation Site](https://github.io)
+- **Documentation**: [Documentation Site](https://sigvargen.github.io/SigVarGen/)
+- **Functions Overview**: [Modules](https://sigvargen.github.io/SigVarGen/modules/)
 - **Tutorials**: [Tutorials](./tutorials)
 - **Contributing**: [Contributing Guidelines](./doc/contributing.md)
 - **Bug reports:**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)

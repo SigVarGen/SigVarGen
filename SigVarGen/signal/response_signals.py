@@ -92,6 +92,26 @@ def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overl
 def blend_signal(base_slice, interrupt_slice, blend=0.5):
     """
     Blend an interrupt slice into a base slice with a specified factor.
+
+    This function linearly combines a base signal slice and an interrupt slice using 
+    a blend factor. The blending determines how much of the base signal is retained 
+    versus how much of the interrupt is applied.
+
+    Parameters
+    ----------
+    base_slice : np.ndarray
+        The base signal segment to be modified.
+    interrupt_slice : np.ndarray
+        The interrupt signal segment to be blended into the base signal.
+    blend : float, optional
+        The blending factor between 0 and 1 (default: 0.5).
+        - A value closer to 1 retains more of the base signal.
+        - A value closer to 0 retains more of the interrupt signal.
+
+    Returns
+    -------
+    blended_signal : np.ndarray
+        The resulting signal segment after blending.
     """
     return blend * base_slice + (1 - blend) * interrupt_slice
 
@@ -99,6 +119,39 @@ def blend_signal(base_slice, interrupt_slice, blend=0.5):
 def apply_interrupt_modifications(
     inter_part, base_part, device_min, device_max, drop, disperse=False, blend_factor=0.5
 ):
+    """
+    Apply modifications to an interrupt signal and ensure it fits within device constraints.
+
+    This function adjusts an interrupt signal segment by optionally applying baseline drift, 
+    shifting its amplitude within the allowed device range, and blending it into the base signal.
+
+    Parameters
+    ----------
+    inter_part : np.ndarray
+        The segment of the interrupt signal to be modified.
+    base_part : np.ndarray
+        The corresponding segment of the base signal.
+    device_min : float
+        Minimum allowed amplitude of the device.
+    device_max : float
+        Maximum allowed amplitude of the device.
+    drop : bool
+        If True, shifts the interrupt signal downward (drop below baseline).
+        If False, shifts the interrupt signal upward.
+    disperse : bool, optional
+        If True, the interrupt will have a varying baseline drift with peak drift in the middle (default: True).
+    blend_factor : float, optional
+        Blend weight between base and interrupt signal (default: 0.5).
+        - A higher value retains more of the base signal.
+        - A lower value retains more of the interrupt signal.
+
+    Returns
+    -------
+    modified_inter_part : np.ndarray
+        The modified interrupt signal segment after applying drift and offset adjustments.
+    offset : float
+        The amount by which the interrupt signal was shifted.
+    """
     if disperse:
         if not drop:
             allowed_drift = device_max - np.max(inter_part)
@@ -151,7 +204,8 @@ def generate_main_interrupt(
     frequency_scale=1.0
 ):
     """
-    Generate a main interrupt signal (raw sinusoidal wave).
+    Generate a main interrupt signal. Acts as a wrapper around generate_signal 
+    function for perturbating signal generation application.
     
     Parameters
     ----------
@@ -242,7 +296,7 @@ def add_main_interrupt(
     base_signal : np.ndarray
         The original base signal (may already contain some modifications).
     domain : str
-        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
+        Key for amplitude/frequency ranges in RANGES.
     DEVICE_RANGES : dict
         Contains overall device amplitude/frequency limits.
     INTERRUPT_RANGES : dict
@@ -252,7 +306,7 @@ def add_main_interrupt(
     duration_ratio : float
         Fraction of total signal length the main interrupt should occupy.
     disperse : bool, optional
-        If True, the signal will have a varying baseline drift (default: True).
+        If True, the interrupt will have a varying baseline drift with peak drift in the middle (default: True).
     drop : bool, optional
         If True, modify signal to dip below baseline instead of rising above.
     n_sinusoids : int, optional
@@ -399,7 +453,9 @@ def add_complexity_to_inter(
     end_main : int
         End index of the main interrupt.
     domain : str
-        Key for amplitude/frequency ranges in INTERRUPT_RANGES.
+        Key for amplitude/frequency ranges in RANGES.
+    DEVICE_RANGES : dict
+        Contains overall device amplitude/frequency limits.
     INTERRUPT_RANGES : dict
         Contains response amplitude and frequency ranges for each device domain.
     drop : bool
@@ -738,6 +794,9 @@ def add_interrupt_bursts(
         Number of small interrupts to add (default: Random from 15 to 20).
     non_overlap : bool, optional
         If True, prevents overlap between bursts.
+    small_duration_ratio_range : tuple of floats, optional (default: random from 0.001 to 0.005)
+        Interrupt burst duration in relationship to t.
+
 
     Returns
     -------
