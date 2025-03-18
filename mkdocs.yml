@@ -15,7 +15,8 @@ theme:
     - content.tabs.link
 
 nav:
-  - Home: index.md
+  - Home: 
+      - Home: index.md
   - Getting Started:
       - Installation: getting_started.md
   - Modules:
