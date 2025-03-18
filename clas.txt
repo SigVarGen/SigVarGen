@@ -1,0 +1,7 @@
+FEAT	Adding a new feature or enhancement. Example: FEAT: Added baseline drift and vectorized signal generation
+BUG	    Bug fixes. Example: BUG: Corrected frequency scaling bug
+TEST	Adding or modifying tests (unchanged). Example: TEST: Added unit tests for place_interrupt()
+DOC	    Documentation updates. Example: DOC: Updated README and added example notebook
+CHORE	General maintenance, refactoring, code style, config updates, or build/CI changes. Example: CHORE: Reformatted with Black and updated CI pipeline
+SEC	    Security fixes. Example: SEC: Updated dependency to fix vulnerability
+RELEASE	Version bumps and release prep (same as RELEASE). Example: RELEASE: Prepare for 1.1.0 release
