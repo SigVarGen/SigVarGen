@@ -1,12 +1,18 @@
 # SigVarGen: Synthetic Signal Variation Generator
 
+[![Python package](https://github.com/SigVarGen/SigVarGen/actions/workflows/python-package.yml/badge.svg)](https://github.com/SigVarGen/SigVarGen/actions/workflows/python-package.yml)
+[![Python Versions](https://img.shields.io/pypi/pyversions/SigVarGen.svg)](https://pypi.org/project/SigVarGen/)
+[![PyPI version](https://img.shields.io/pypi/v/SigVarGen.svg)](https://pypi.org/project/SigVarGen/)
+
+
 SigVarGen is a Python framework designed to create **multiple variants** of a base **1D signal** under the same environmental conditions. It allows the simulation of both **idle-state signals** and signals affected by **external perturbations**, enabling robust testing of algorithms in dynamic environments based on multiple measurements of the same event. Framework is suitable for **time-series analysis**, **signal processing**, and **synthetic data generation** in various domains such as sensor data modeling, embedded systems testing, and machine learning.
 
 - **Documentation**: [Documentation Site](https://sigvargen.github.io/SigVarGen/)
 - **Functions Overview**: [Modules](https://sigvargen.github.io/SigVarGen/modules/)
 - **Tutorials**: [Tutorials](./tutorials)
+- **Dataset Examples**: [Datasets][./datasets]
 - **Contributing**: [Contributing Guidelines](./doc/contributing.md)
-- **Bug reports:**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)
+- **Bug reports**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)
 
 
 ---
@@ -24,7 +30,6 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 
 SigVarGen is compatible with Python 3.8 and above. To install the framework, simply use pip:
 
-(in progress)
 ```bash
 pip install SigVarGen
 ```
@@ -52,10 +57,9 @@ For hands-on examples and tutorials, please refer to the [tutorials](./tutorials
 
 ## Documentation
 
-Comprehensive documentation is available on our [documentation site](https://github.io). The documentation covers:
+Comprehensive documentation is available on our [documentation site](https://sigvargen.github.io/SigVarGen/). The documentation covers:
 - Algorithms used in complex functions. 
-- Detailed description and code snippets.
-- Best practices for integrating SigVarGen with your data processing pipelines.
+- Detailed description and code examples.
 
 ---
 
