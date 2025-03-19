@@ -7,7 +7,7 @@ from .utils import *
 
 #__version__ = 1.0.0
 
-__all__ = ['noise', 'signal', 'variations'
+__all__ = ['noise', 'signal', 'variations',
             'envelope_linear', 'envelope_sine', 'envelope_random_walk', 'envelope_blockwise',
             'generate_noise_power', 'add_colored_noise',
             'get_non_overlapping_interval', 'place_interrupt', 'apply_interrupt_modifications', 

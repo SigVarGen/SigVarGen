@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SigVarGen"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="SigVarGen developers", email="ovakulenko@uwaterloo.ca" }
 ]
@@ -29,5 +29,5 @@ license = { file = "LICENSE.txt" }
 Homepage = "https://github.com/SigVarGen/SigVarGen"
 Issues = "https://github.com/SigVarGen/SigVarGen/issues"
 
-[tool.setuptools]
-packages = ["SigVarGen"]
+[tool.setuptools.packages.find]
+include = ["SigVarGen*"]
