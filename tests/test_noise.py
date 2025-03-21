@@ -83,7 +83,7 @@ def test_generate_noise_power_fixed_snr():
 # Tests for add_colored_noise
 # -------------------------------------
 
-@pytest.mark.parametrize("color", ["white", "pink", "brown"])
+@pytest.mark.parametrize("color", ["white", "pink", "brown", "blue", "violet"])
 def test_add_colored_noise_basic(zero_wave, color):
     """
     Test that add_colored_noise produces an output of the same shape as the input.
@@ -99,6 +99,30 @@ def test_add_colored_noise_basic(zero_wave, color):
     rms = np.mean(res**2)
     expected_rms = noise_power
     assert np.isclose(rms, expected_rms, rtol=0.2), f"RMS of noise ({rms}) not within tolerance of expected ({expected_rms})."
+
+def test_add_colored_noise_with_callable(zero_wave):
+    """
+    Test that add_colored_noise works with a custom callable for the color filter.
+    The callable should take a frequency array and return a scaling array.
+    """
+    noise_power = 0.01
+    npw = (1.0, 1.0)  # Fixed noise power scaling
+    mf = (1.0, 1.0)   # No modulation
+
+    # Define a custom filter: slight high-frequency boost (not a standard color)
+    def custom_filter(freqs):
+        return 1 + 0.1 * freqs  # Add gentle frequency-based increase
+
+    # Run the function using the callable as the color parameter
+    res, _ = add_colored_noise(zero_wave, noise_power, npw, mf, color=custom_filter)
+
+    # Output shape should match input
+    assert res.shape == zero_wave.shape, "Output wave shape should match input wave shape with callable color."
+
+    # Since input is zero, RMS of output should be close to noise_power (some deviation allowed)
+    rms = np.mean(res**2)
+    expected_rms = noise_power
+    assert np.isclose(rms, expected_rms, rtol=0.2), f"RMS of noise with custom filter ({rms}) not within tolerance of expected ({expected_rms})."
 
 def test_add_colored_noise_with_mod_envelope(zero_wave):
     """

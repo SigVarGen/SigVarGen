@@ -36,7 +36,12 @@ def generate_noise_power(wave, snr_range=(-20, 30)):
 
     return noise_power, selected_snr_db
 
-
+def harmonic_peaks(freqs, base_freq=100, num_harmonics=5, width=5):
+    filter = np.zeros_like(freqs)
+    for i in range(1, num_harmonics + 1):
+        center = base_freq * i
+        filter += np.exp(-((freqs - center) ** 2) / (2 * width**2))
+    return filter
 
 def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=None):
     """
@@ -52,8 +57,16 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
         Tuple specifying the range over which to vary the noise power (relative to noise_power).
     - mf : tuple (float, float)
         Tuple specifying the modulation factor range to slightly vary the amplitude of the signal.
-    - color : string
-        Type of noise to add ('white', 'pink', 'brown'). Default is 'pink'.
+    - color : str or callable, optional
+        Specifies the spectral profile of the noise to be added. Accepts:
+        - Predefined strings:
+            - 'white'  → flat spectrum
+            - 'pink'   → power ∝ 1/f
+            - 'brown'  → power ∝ 1/f^2
+            - 'blue'   → power ∝ f
+            - 'violet' → power ∝ f^2
+        - A custom function: A callable that takes a frequency array and returns a filter of the same shape.
+          For example, `lambda freqs: 1 / (freqs**0.8)` for a custom decay.
     - mod_envelope : Dictionary {'func': function, 'param': list}
         Dictionary selected from noise_funcs. 
 
@@ -72,12 +85,21 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
     freqs = np.fft.rfftfreq(len(white_noise), d=1.0)
     freqs[0] = freqs[1] 
     
-    if color == 'pink':
+    if callable(color):
+        # If color is a function, than apply it as a filter
+        filter = color(freqs)
+    elif color == 'pink':
         # Pink noise has a PSD proportional to 1/f
         filter = 1 / np.sqrt(freqs)
     elif color == 'brown':
-        # Brown noise has a PSD proportional to 1/f^2
+        # Brown (red) noise has a PSD proportional to 1/f^2
         filter = 1 / freqs
+    elif color == 'blue':
+        # density proportional to f
+        filter = np.sqrt(freqs)
+    elif color == 'violet':
+        # density proportional to f^2
+        filter = freqs
     else:
         # White noise (no filtering)
         filter = np.ones_like(freqs)
