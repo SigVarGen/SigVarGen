@@ -37,11 +37,44 @@ def generate_noise_power(wave, snr_range=(-20, 30)):
     return noise_power, selected_snr_db
 
 def harmonic_peaks(freqs, base_freq=100, num_harmonics=5, width=5):
+    """
+    Generate a frequency-domain filter with Gaussian peaks at harmonic positions.
+
+    This function creates a spectral filter that emphasizes harmonic frequencies of a given base frequency.
+    The resulting filter can be applied to white noise in the frequency domain to produce noise that
+    contains energy primarily at harmonic peaks (e.g., for simulating voiced or periodic signals).
+
+    Parameters
+    ----------
+    freqs : np.ndarray
+        Array of frequency bins (e.g., from np.fft.rfftfreq).
+    base_freq : float, optional
+        The fundamental frequency (in Hz). Harmonic peaks will occur at integer multiples of this value.
+        Default is 100 Hz.
+    num_harmonics : int, optional
+        Number of harmonics (including the base frequency) to generate. Default is 5.
+    width : float, optional
+        Standard deviation of each Gaussian peak. Controls how wide each harmonic is in the spectrum.
+        Default is 5.
+
+    Returns
+    -------
+    filter : np.ndarray
+        A frequency-domain filter array of the same shape as `freqs`, with harmonic peaks applied.
+        Can be multiplied with a frequency-domain noise spectrum (e.g., from FFT of white noise).
+    
+    Example
+    -------
+    >>> freqs = np.fft.rfftfreq(1024, d=1/1000)  # Sampling rate = 1000 Hz
+    >>> filter = harmonic_peaks(freqs, base_freq=100, num_harmonics=3, width=10)
+    >>> plt.plot(freqs, filter)  # Visualize harmonic structure
+    """
     filter = np.zeros_like(freqs)
     for i in range(1, num_harmonics + 1):
         center = base_freq * i
         filter += np.exp(-((freqs - center) ** 2) / (2 * width**2))
     return filter
+
 
 def add_colored_noise(wave, fs, noise_power, npw, mf, color='pink', mod_envelope=None):
     """

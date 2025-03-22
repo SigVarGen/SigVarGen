@@ -85,58 +85,65 @@ normalized_signal = normalization(raw_signal)
 
 ---
 
-### `generate_device_parameters`
+Here's the **updated documentation** for your new generalized version of `generate_device_parameters_n_split`, which supports splitting into **N subsets** (not just two), while keeping all your original intent and style:
 
-`generate_device_parameters` splits the **amplitude and frequency ranges** of device configurations into two **distinct subsets**. This allows for **controlled variations** in device constraints, which is useful for **simulating different operating conditions** or **testing parameter-dependent behaviors** in signal processing tasks.
+---
 
-By adjusting the **split ratio**, users can control the **proportion of the parameter space assigned to each subset**. Additionally, the function can:
-- **Preserve full frequency ranges** for both subsets or  
-- **Split frequency ranges proportionally with amplitude constraints**.
+### `generate_device_parameters_n_split`
+
+`generate_device_parameters_n_split` splits the **amplitude and frequency ranges** of device configurations into **multiple distinct subsets**. This helps to generate distinct spaces for idle and interrupting signals.
+
+By adjusting the **split ratios**, users can precisely control how much of the amplitude and frequency range is assigned to each subset.
 
 ---
 
 #### Notes
-- If `drop=False`, the **first subset** receives the **lower amplitude range**, and the **second subset** gets the **higher amplitude range**.
-- If `drop=True`, the assignment is **reversed**.
-- If `frequency_follows_amplitude=True`, **frequency ranges are split along with amplitude**.
-- If `frequency_follows_amplitude=False`, both subsets retain the **full frequency range**.
-- A `split_ratio` of `0.5` evenly distributes the parameter space between the two subsets.
+- The number of splits is determined by the **length of `split_ratios`** (e.g. `[0.3, 0.4, 0.3]` → 3 splits).
+- If `drop=False`, the subsets are assigned from **low → high amplitude**.
+- If `drop=True`, the subsets are assigned from **high → low amplitude**.
+- If `frequency_follows_amplitude=True`, frequency ranges are **split proportionally** alongside amplitude.
+- If `frequency_follows_amplitude=False`, **all subsets receive the full frequency range**.
 
 ---
 
 #### Parameters  
 
 - **device_params** (`dict`):  
-  Dictionary containing device parameter configurations.  
-  Each entry should include:
-  - `'amplitude'`: Tuple **(min, max)** voltage levels.
-  - `'frequency'`: Tuple **(min, max)** frequency range or a nested dictionary of frequency bands.
+  A dictionary of **device configurations**, where each key is a **device name** (e.g., `'Arduino Board'`) and each value is a dictionary with:
+  - `'amplitude'`: Tuple `(min_amplitude, max_amplitude)`  
+  - `'frequency'`:  
+    - Either a tuple `(min_frequency, max_frequency)`  
+    - Or a nested dictionary of frequency bands:
+      ```python
+      'frequency': {
+          'band_1': (f_min1, f_max1),
+          'band_2': (f_min2, f_max2),
+          ...
+      }
+      ```
 
 - **drop** (`bool`, optional):  
-  - `False` → First dictionary gets **lower amplitude range**.  
-  - `True` → First dictionary gets **upper amplitude range**.  
+  If `True`, the first returned subset gets the **upper part** of the amplitude range.  
+  If `False`, the first subset gets the **lower part**.  
   **Default:** `False`.
 
 - **frequency_follows_amplitude** (`bool`, optional):  
-  - `True` → **Frequency ranges split proportionally** to amplitude.  
-  - `False` → Both subsets retain **full frequency range**.  
+  If `True`, frequency ranges are split proportionally with amplitude.  
+  If `False`, each subset receives the **entire frequency range**.  
   **Default:** `True`.
 
-- **split_ratio** (`float`, optional):  
-  Fraction **(0.0 to 1.0)** defining how much of the range is assigned to the **first subset**.  
-  - `0.0` → All values go to the **second subset**.  
-  - `1.0` → All values go to the **first subset**.  
-  **Default:** `0.5`.
+- **split_ratios** (`list of float`):  
+  A list of ratios (e.g., `[0.3, 0.4, 0.3]`) that determine how to divide the amplitude and frequency ranges.  
+  Must sum to **1.0**.  
+  **Default:** `[0.5, 0.5]`
 
 ---
 
 #### Returns  
 
-- **lower_params** (`dict`):  
-  Dictionary containing **lower-range** parameter configurations.
-
-- **upper_params** (`dict`):  
-  Dictionary containing **upper-range** parameter configurations.
+- **param_subsets** (`list of dict`):  
+  A list of dictionaries containing parameter subsets.  
+  Each corresponds to one portion of the original range, based on `split_ratios`.
 
 ---
 
@@ -146,29 +153,32 @@ By adjusting the **split ratio**, users can control the **proportion of the para
 import numpy as np
 import SigVarGen.utils as utils
 
-# Example device parameters
+# Device configuration
 device_params = {
     'Arduino Board': {
-        'amplitude': (0, 5),  # Voltage range
-        'frequency': (0, 12e3)  # Hz
+        'amplitude': (0, 5),
+        'frequency': (0, 12e3)
     },
     'Drones': {
-        'amplitude': (0, 1),  # Voltage range
+        'amplitude': (0, 1),
         'frequency': {
-            'control': (2.398e9, 2.402e9),  # Hz
-            'telemetry_low': (432e6, 434e6),  # Hz
-            'telemetry_high': (2.39e9, 5.9e9)  # Hz
+            'control': (2.398e9, 2.402e9),
+            'telemetry_low': (432e6, 434e6),
+            'telemetry_high': (2.39e9, 5.9e9)
         }
     }
 }
 
-# Generate parameter subsets with a 60/40 split and frequency following amplitude
-lower_params, upper_params = utils.generate_device_parameters(
-    device_params, drop=False, split_ratio=0.6
+# Split into 3 subsets: 30%, 40%, 30%
+param_splits = utils.generate_device_parameters_n_split(
+    device_params,
+    drop=False,
+    frequency_follows_amplitude=True,
+    split_ratios=[0.3, 0.4, 0.3]
 )
 
-print("Lower Parameter Set:", lower_params)
-print("Upper Parameter Set:", upper_params)
+for i, subset in enumerate(param_splits):
+    print(f"Subset {i+1}:", subset)
 ```
 
 ---

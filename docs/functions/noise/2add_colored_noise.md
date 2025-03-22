@@ -1,88 +1,127 @@
+Absolutely! Here's the **expanded and fully updated documentation** for `add_colored_noise`, now including the **new features** like:
+
+- `fs` (sampling rate) for realistic frequency scaling  
+- Support for **additional noise colors** (`blue`, `violet`)  
+- Support for **custom spectral filters (callables)**  
+- **Return of isolated noise** for analysis  
+- **Time-varying envelopes**
+
+---
+
 ## `add_colored_noise`
 
 **Location:** `noise/noise_addition.py`
 
 ---
 
-## Description
-`add_colored_noise` introduces noise (white, pink, or brown) into a signal, simulating realistic noisy environments. This function applies frequency-domain filtering to generate colored noise with specific spectral properties and then scales it to a defined noise power level.
+### Description
 
-Additionally, an optional modulation envelope can be applied, introducing time-dependent amplitude variations that mimic real-world non-stationary noise patterns. This makes the function valuable for signal augmentation, testing noise-robust algorithms, and creating realistic simulations of environmental interference.
+`add_colored_noise` introduces **colored noise** into a signal using frequency-domain filtering techniques. It simulates real-world interference by allowing users to define **spectral characteristics**, **noise intensity**, and **modulation envelopes** for **non-stationary noise**.
+
+This function is especially useful for:
+- Creating **realistic signal variations**
+- **Stress-testing** algorithms under different noise conditions
+- **Signal augmentation** for machine learning and data-driven modeling
+
+---
+
+### ✨ New Features
+- **`fs` (sampling rate)** parameter ensures accurate spectral shaping
+- Supports **blue** and **violet** noise profiles
+- Accepts **custom frequency-domain filters** as callables
+- Returns **isolated noise component** for separate inspection
+- Applies **modulation envelope** to simulate time-varying noise
 
 ---
 
 ### Notes
-- **White noise** has a flat power spectrum across all frequencies.
-- **Pink noise** follows a \(1/f\) spectral decay, often found in natural and biological systems.
-- **Brown noise** follows a \(1/f^2\) spectral decay, emphasizing lower frequencies.
-- The noise power is adjusted relative to the input signal using a **specified SNR range**.
-- Applying a **modulation envelope** allows for non-stationary noise characteristics.
+
+- **White noise** → flat power across all frequencies  
+- **Pink noise** → power ∝ 1/f (natural, biological systems)  
+- **Brown noise** → power ∝ 1/f² (emphasizes low frequencies)  
+- **Blue noise** → power ∝ f (emphasizes high frequencies)  
+- **Violet noise** → power ∝ f² (extreme high-frequency boost)  
+- **Custom filters** can target specific frequency patterns (e.g., harmonic peaks)
 
 ---
 
 ### Parameters
 
-- **wave** (`numpy.ndarray`):  
-  The original signal to which noise will be added.
+- **wave** (`np.ndarray`):  
+  The input signal to which noise will be added.
+
+- **fs** (`float`):  
+  Sampling rate in Hz. Used to compute correct frequency bins for spectral shaping.
 
 - **noise_power** (`float`):  
-  The base noise power level, determining the variance of the added noise.
+  Base noise power (variance). Determines energy of the added noise.
 
-- **npw** (`tuple` of `float`):  
-  A range (`min`, `max`) defining noise power variation, allowing randomness in noise intensity between different measurements.
+- **npw** (`tuple(float, float)`):  
+  Range multiplier for noise power. Adds variability in intensity.  
+  Example: `(0.8, 1.2)` allows ±20% fluctuation.
 
-- **mf** (`tuple` of `float`):  
-  A range (`min`, `max`) defining the modulation factor variation, slightly altering the signal amplitude between different measurements.
+- **mf** (`tuple(float, float)`):  
+  Range for amplitude modulation applied to the entire signal.  
+  Simulates slight scaling due to environmental or hardware changes.
 
-- **color** (`str`, optional):  
-  Type of noise to add:  
-  - `'white'` → Equal power at all frequencies.  
-  - `'pink'` → Power decays as \(1/f\), common in speech and natural signals.  
-  - `'brown'` → Power decays as \(1/f^2\), emphasizing low frequencies.  
-  **Default:** `'pink'`.
+- **color** (`str` or `callable`, optional):  
+  Defines the spectral profile of the noise. Options:
+  - `'white'` → flat spectrum
+  - `'pink'` → 1/f
+  - `'brown'` → 1/f²
+  - `'blue'` → f
+  - `'violet'` → f²  
+  - **Callable** → custom function `filter(freqs)` that returns a frequency-domain mask  
+    (e.g., harmonic peaks or band-limited filters)
 
 - **mod_envelope** (`dict`, optional):  
-  Dictionary specifying a time-varying amplitude envelope for non-stationary noise:  
-  - `'func'`: The envelope function.  
-  - `'param'`: Range of parameters for the envelope function.  
-    If `None`, noise remains stationary. **Default:** `None`.
-    Parameter examples provided in `config.py`.
+  Modulates the **noise amplitude over time** (non-stationary noise). Should include:
+  - `'func'`: an envelope function like `envelope_sine`, `envelope_random_walk`, etc.
+  - `'param'`: parameter(s) passed to the envelope function (usually a range)  
+  Example: `{'func': envelope_sine, 'param': [0.01, 0.015]}`. More parameter examples provided in config.py.
+  - If `None`, noise remains stationary. Default: `None`. 
+
 
 ---
 
 ### Returns
 
-- **res** (`numpy.ndarray`):  
-  The input signal with added colored noise.
+- **res** (`np.ndarray`):  
+  Final signal with colored, possibly modulated noise added.
 
-- **noise** (`numpy.ndarray`):  
-  The isolated noise component, useful for separate analysis or denoising techniques.
+- **noise** (`np.ndarray`):  
+  The noise component alone (useful for plotting, denoising tests, etc.)
 
 ---
 
-### Usage Example
+### Example Usage
+
 ```python
 import numpy as np
 import SigVarGen as svg
 
-# Generate a clean sine wave
-t = np.linspace(0, 1, 1000)
+# Create a clean sine wave
+fs = 1000  # Hz
+t = np.linspace(0, 1, fs, endpoint=False)
 clean_signal = np.sin(2 * np.pi * 5 * t)
 
-# Define noise parameters
+# Define parameters
 noise_power = 0.05
-npw_range = (1, 1.1)
-mf_range = (1, 1) 
+npw_range = (1.0, 1.2)
+mf_range = (1.0, 1.0)
 
-# Add pink noise with a sine modulation envelope
+# Add blue noise with sine-modulated envelope
 noisy_signal, noise = svg.add_colored_noise(
     wave=clean_signal,
+    fs=fs,
     noise_power=noise_power,
     npw=npw_range,
     mf=mf_range,
-    color="pink",
-    mod_envelope={"func": svg.envelope_sine, "param": [0.01, 0.015]} 
+    color='blue',
+    mod_envelope={'func': svg.envelope_sine, 'param': [0.01, 0.02]}
 )
 
-print("Noisy Signal Shape:", noisy_signal.shape)
+# Optional: plot or analyze the noise separately
+print("Noisy Signal:", noisy_signal[:10])
+print("Isolated Noise:", noise[:10])
 ```
