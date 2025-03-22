@@ -154,21 +154,14 @@ def apply_interrupt_modifications(
     """
     if disperse:
         if not drop:
-            # Center interrupt around the base part mean
-            inter_mean = np.mean(inter_part)
-            base_mean = 0.8*np.mean(base_part)
-            inter_part += (base_mean - inter_mean)
             allowed_drift = device_max - np.max(inter_part)
             allowed_drift = max(allowed_drift, 0)
-            min_drift = 0 #np.max(inter_part)
+            min_drift = np.max(inter_part)
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='up', min_drift=min_drift)
         else:
-            inter_mean = np.mean(inter_part)
-            base_mean = np.mean(base_part)
-            recenter_shift = 0.2 * (base_mean - inter_mean)  # 50% of the difference
-            inter_part += recenter_shift
             allowed_drift = np.min(inter_part) - device_min
-            min_drift = 0 #device_min
+            allowed_drift = max(allowed_drift, 0)
+            min_drift = device_min
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='down', min_drift=min_drift)
 
     # Compute the current interrupt range
@@ -506,7 +499,7 @@ def add_complexity_to_inter(
         device_min=min(INTERRUPT_RANGES[domain]['amplitude'][0], DEVICE_RANGES[domain]['amplitude'][0]),
         device_max=max(INTERRUPT_RANGES[domain]['amplitude'][1], DEVICE_RANGES[domain]['amplitude'][1]),
         drop=drop,
-        disperse=True, 
+        disperse=False, 
         blend_factor=blend_factor
     )
 
