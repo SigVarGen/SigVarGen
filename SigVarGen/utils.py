@@ -21,67 +21,92 @@ def normalization(signal1):
     signal1_norm = (signal1 - np.mean(signal1)) / np.std(signal1)
     return signal1_norm
 
-def generate_device_parameters(device_params, drop=False, frequency_follows_amplitude=True, split_ratio=0.5):
+def generate_device_parameters(device_params, drop=False, frequency_follows_amplitude=True, split_ratios=[0.5, 0.5]):
     """
-    Splits device parameters into two ranges.
+    Splits device parameters into N ranges based on split_ratios.
 
-    Parameters:
-        device_params (dict): Device parameter dictionary in the described format.
-        drop (bool): If False, first dict gets lower amplitude, if True, first gets upper.
-        frequency_follows_amplitude (bool): If True, frequencies split with amplitude.
-                                             If False, both ranges get the full frequency range.
-        split_ratio (float): Proportion of the range assigned to the first dictionary (0.0 to 1.0).
+    Parameters
+    ----------
+    device_params : dict
+        Dictionary of device specs. Format:
+        {
+            'DeviceName': {
+                'amplitude': (min_amp, max_amp),
+                'frequency': (min_freq, max_freq) or dict of ranges
+            }
+        }
 
-    Returns:
-        tuple: (lower_params, upper_params)
+    drop : bool
+        If False, the first split gets the lower amplitude range.
+        If True, the first split gets the upper amplitude range.
+
+    frequency_follows_amplitude : bool
+        If True, frequency ranges are split using the same logic as amplitude.
+        If False, all splits receive the full frequency range.
+
+    split_ratios : list of float
+        Proportions that define how to divide the amplitude and frequency ranges.
+        Must sum to 1.0.
+
+    Returns
+    -------
+    List[dict]
+        A list of device parameter dicts, each corresponding to a split.
     """
-    if not (0 <= split_ratio <= 1):
-        raise ValueError("split_ratio must be between 0.0 and 1.0")
+    if not split_ratios or not np.isclose(sum(split_ratios), 1.0):
+        raise ValueError("split_ratios must be a non-empty list and sum to 1.0")
 
-    lower_params = {}
-    upper_params = {}
+    n = len(split_ratios)
+    split_param_sets = [{} for _ in range(n)]
 
     for device, params in device_params.items():
-        amplitude_min, amplitude_max = params['amplitude']
+        amp_min, amp_max = params['amplitude']
+        amp_range = amp_max - amp_min
 
-        split_point_amplitude = amplitude_min + split_ratio * (amplitude_max - amplitude_min)
+        # Compute amplitude boundaries
+        amp_bounds = [amp_min]
+        for ratio in split_ratios:
+            amp_bounds.append(amp_bounds[-1] + ratio * amp_range)
 
         if drop:
-            lower_params[device] = {'amplitude': (split_point_amplitude, amplitude_max)}
-            upper_params[device] = {'amplitude': (amplitude_min, split_point_amplitude)}
-        else:
-            lower_params[device] = {'amplitude': (amplitude_min, split_point_amplitude)}
-            upper_params[device] = {'amplitude': (split_point_amplitude, amplitude_max)}
+            amp_bounds = amp_bounds[::-1]
 
+        for i in range(n):
+            split_param_sets[i].setdefault(device, {})
+            split_param_sets[i][device]['amplitude'] = tuple(sorted((amp_bounds[i], amp_bounds[i + 1])))
+
+        # Frequency handling
         if 'frequency' in params:
+            def split_freq_range(freq_min, freq_max):
+                freq_range = freq_max - freq_min
+                bounds = [freq_min]
+                for ratio in split_ratios:
+                    bounds.append(bounds[-1] + ratio * freq_range)
+                if drop:
+                    bounds = bounds[::-1]
+                return [tuple(sorted((bounds[i], bounds[i + 1]))) for i in range(n)]
+
             if isinstance(params['frequency'], dict):
-                lower_params[device]['frequency'] = {}
-                upper_params[device]['frequency'] = {}
+                for i in range(n):
+                    split_param_sets[i][device]['frequency'] = {}
 
                 for key, (freq_min, freq_max) in params['frequency'].items():
                     if frequency_follows_amplitude:
-                        split_point_freq = freq_min + split_ratio * (freq_max - freq_min)
-                        if drop:
-                            lower_params[device]['frequency'][key] = (split_point_freq, freq_max)
-                            upper_params[device]['frequency'][key] = (freq_min, split_point_freq)
-                        else:
-                            lower_params[device]['frequency'][key] = (freq_min, split_point_freq)
-                            upper_params[device]['frequency'][key] = (split_point_freq, freq_max)
+                        freq_splits = split_freq_range(freq_min, freq_max)
+                        for i in range(n):
+                            split_param_sets[i][device]['frequency'][key] = freq_splits[i]
                     else:
-                        lower_params[device]['frequency'][key] = (freq_min, freq_max)
-                        upper_params[device]['frequency'][key] = (freq_min, freq_max)
+                        for i in range(n):
+                            split_param_sets[i][device]['frequency'][key] = (freq_min, freq_max)
             else:
                 freq_min, freq_max = params['frequency']
                 if frequency_follows_amplitude:
-                    split_point_freq = freq_min + split_ratio * (freq_max - freq_min)
-                    if drop:
-                        lower_params[device]['frequency'] = (split_point_freq, freq_max)
-                        upper_params[device]['frequency'] = (freq_min, split_point_freq)
-                    else:
-                        lower_params[device]['frequency'] = (freq_min, split_point_freq)
-                        upper_params[device]['frequency'] = (split_point_freq, freq_max)
+                    freq_splits = split_freq_range(freq_min, freq_max)
+                    for i in range(n):
+                        split_param_sets[i][device]['frequency'] = freq_splits[i]
                 else:
-                    lower_params[device]['frequency'] = (freq_min, freq_max)
-                    upper_params[device]['frequency'] = (freq_min, freq_max)
+                    for i in range(n):
+                        split_param_sets[i][device]['frequency'] = (freq_min, freq_max)
 
-    return lower_params, upper_params
+    return split_param_sets
+

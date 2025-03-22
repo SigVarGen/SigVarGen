@@ -163,11 +163,11 @@ def apply_interrupt_modifications(
             min_drift = 0 #np.max(inter_part)
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='up', min_drift=min_drift)
         else:
-            inter_mean = 0.8*np.mean(inter_part)
+            inter_mean = np.mean(inter_part)
             base_mean = np.mean(base_part)
-            inter_part += (base_mean - inter_mean)
+            recenter_shift = 0.2 * (base_mean - inter_mean)  # 50% of the difference
+            inter_part += recenter_shift
             allowed_drift = np.min(inter_part) - device_min
-            allowed_drift = max(allowed_drift, 0)
             min_drift = 0 #device_min
             inter_part = apply_baseline_drift_middle_peak(inter_part, allowed_drift, direction='down', min_drift=min_drift)
 

@@ -4,7 +4,7 @@ import numpy as np
 from SigVarGen.utils import generate_device_parameters, calculate_ED, calculate_SNR, interpoling, normalization
 
 def test_basic_split(sample_device_params):
-    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratio=0.5)
+    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratios=[0.5,0.5])
 
     # Amplitude should be split in half
     assert lower["DeviceA"]["amplitude"] == (0, 5)
@@ -21,7 +21,7 @@ def test_basic_split(sample_device_params):
     assert upper["DeviceB"]["frequency"] == (100, 150)
 
 def test_drop_param(sample_device_params):
-    lower, upper = generate_device_parameters(sample_device_params, drop=True, split_ratio=0.5)
+    lower, upper = generate_device_parameters(sample_device_params, drop=True, split_ratios=[0.5,0.5])
 
     # Amplitudes should be reversed
     assert lower["DeviceA"]["amplitude"] == (5, 10)
@@ -31,14 +31,14 @@ def test_drop_param(sample_device_params):
     assert upper["DeviceB"]["amplitude"] == (5, 10)
 
 def test_full_split_to_lower(sample_device_params):
-    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratio=0.0)
+    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratios=[0.0,1.0])
 
     # Lower should get the full range, upper should be minimal
     assert lower["DeviceA"]["amplitude"] == (0, 0)
     assert upper["DeviceA"]["amplitude"] == (0, 10)
 
 def test_full_split_to_upper(sample_device_params):
-    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratio=1.0)
+    lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratios=[1.0,0.0])
 
     # Upper should get the full range, lower should be minimal
     assert lower["DeviceA"]["amplitude"] == (0, 10)
@@ -53,10 +53,10 @@ def test_frequency_follows_amplitude_false(sample_device_params):
 
 def test_invalid_split_ratio():
     with pytest.raises(ValueError):
-        generate_device_parameters({}, split_ratio=-0.1)
+        generate_device_parameters({}, split_ratios=[0.3,0.2])
 
     with pytest.raises(ValueError):
-        generate_device_parameters({}, split_ratio=1.1)
+        generate_device_parameters({}, split_ratios=[0.5,0.7])
 
 
 def test_euclidean_distance():
