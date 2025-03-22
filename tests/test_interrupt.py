@@ -511,7 +511,7 @@ def test_add_interrupt_with_params_with_custom_values(sample_time_vector, sample
         temp=temp,
         duration_ratio=0.1,
         n_smaller_interrupts=2,
-        non_overlap=True,
+        non_overlap=False,
         complex_iter=1
     )
 

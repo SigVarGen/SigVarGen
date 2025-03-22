@@ -28,7 +28,10 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 
 ## Installation
 
-SigVarGen is compatible with Python 3.8 and above. To install the framework, simply use pip:
+SigVarGen is compatible with Python 3.8 and above. The framework works on Ubuntu, macOS, and Windows.
+Specifically, it has been tested on: Ubuntu 22.04, macOS 14 and Windows 11.
+
+To install the framework, simply use pip:
 
 ```bash
 pip install SigVarGen
