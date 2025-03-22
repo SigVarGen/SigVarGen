@@ -43,7 +43,7 @@ def harmonic_peaks(freqs, base_freq=100, num_harmonics=5, width=5):
         filter += np.exp(-((freqs - center) ** 2) / (2 * width**2))
     return filter
 
-def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=None):
+def add_colored_noise(wave, fs, noise_power, npw, mf, color='pink', mod_envelope=None):
     """
     Add colored noise (white, pink, or brown) to a signal.
 
@@ -82,7 +82,8 @@ def add_colored_noise(wave, noise_power, npw, mf, color='pink', mod_envelope=Non
     white_noise = np.random.normal(0, 1, size=len(wave))
     
     # Generate colored noise
-    freqs = np.fft.rfftfreq(len(white_noise), d=1.0)
+    d = 1/fs
+    freqs = np.fft.rfftfreq(len(white_noise), d=d)
     freqs[0] = freqs[1] 
     
     if callable(color):

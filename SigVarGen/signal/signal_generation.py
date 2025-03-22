@@ -2,7 +2,7 @@ import numpy as np
 
 from SigVarGen.utils import interpoling
 
-def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
+def generate_signal(t, n_sinusoids, amplitude_range, frequency_range, amp_md_min=0.05, amp_md_max=0.95):
     
     """
     Generate a composite signal made up of multiple sinusoids.
@@ -21,6 +21,12 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
         The minimum and maximum amplitude values for the individual sine waves.
     frequency_range : tuple (float, float)
         The minimum and maximum frequency values (in Hz) for the sine waves.
+    amp_md_min : float, optional
+        A minimum amplitude modifier (as a fraction of amplitude_range[0]) to avoid overly small values. 
+        Default is 0.05.
+    amp_md_max : float, optional
+        A maximum amplitude modifier (as a fraction of amplitude_range[1]) to limit the upper amplitude 
+        used during sinusoid generation. Default is 0.95.
 
     Returns:
     -------
@@ -48,7 +54,7 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
 
     # Generate and sum sinusoids
     for _ in range(n_sinusoids):
-        amp = np.random.uniform(amplitude_range[0], amplitude_range[1])
+        amp = np.random.uniform(amplitude_range[0], amp_md_max*amplitude_range[1])
         freq = np.random.uniform(*frequency_range)
         phase = np.random.uniform(0, 2 * np.pi)
         sinusoid = amp * np.sin(2 * np.pi * freq * t + phase)
@@ -65,7 +71,8 @@ def generate_signal(t, n_sinusoids, amplitude_range, frequency_range):
     signal /= max_abs_value  # Normalize to [-1, 1]
 
     # Rescale signal to be within the exact amplitude range [A_min, A_max]
-    A_min, A_max = amplitude_range
+    A_min = max(amplitude_range[0], amp_md_min*amplitude_range[0])
+    A_max = min(amplitude_range[1], amp_md_max*amplitude_range[1])
     signal = ((signal + 1) / 2) * (A_max - A_min) + A_min
 
     return signal, sinusoids_params
