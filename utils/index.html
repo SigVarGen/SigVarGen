@@ -1567,13 +1567,13 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generate_device_parameters" class="md-nav__link">
+  <a href="#generate_device_parameters_n_split" class="md-nav__link">
     <span class="md-ellipsis">
-      generate_device_parameters
+      generate_device_parameters_n_split
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="generate_device_parameters">
+    <nav class="md-nav" aria-label="generate_device_parameters_n_split">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1795,94 +1795,96 @@
 <div class="highlight"><pre><span></span><code><span class="n">normalized_signal</span> <span class="o">=</span> <span class="n">normalization</span><span class="p">(</span><span class="n">raw_signal</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
-<h3 id="generate_device_parameters"><code>generate_device_parameters</code><a class="headerlink" href="#generate_device_parameters" title="Permanent link">&para;</a></h3>
-<p><code>generate_device_parameters</code> splits the <strong>amplitude and frequency ranges</strong> of device configurations into two <strong>distinct subsets</strong>. This allows for <strong>controlled variations</strong> in device constraints, which is useful for <strong>simulating different operating conditions</strong> or <strong>testing parameter-dependent behaviors</strong> in signal processing tasks.</p>
-<p>By adjusting the <strong>split ratio</strong>, users can control the <strong>proportion of the parameter space assigned to each subset</strong>. Additionally, the function can:
-- <strong>Preserve full frequency ranges</strong> for both subsets or<br />
-- <strong>Split frequency ranges proportionally with amplitude constraints</strong>.</p>
+<p>Here's the <strong>updated documentation</strong> for your new generalized version of <code>generate_device_parameters_n_split</code>, which supports splitting into <strong>N subsets</strong> (not just two), while keeping all your original intent and style:</p>
+<hr />
+<h3 id="generate_device_parameters_n_split"><code>generate_device_parameters_n_split</code><a class="headerlink" href="#generate_device_parameters_n_split" title="Permanent link">&para;</a></h3>
+<p><code>generate_device_parameters_n_split</code> splits the <strong>amplitude and frequency ranges</strong> of device configurations into <strong>multiple distinct subsets</strong>. This helps to generate distinct spaces for idle and interrupting signals.</p>
+<p>By adjusting the <strong>split ratios</strong>, users can precisely control how much of the amplitude and frequency range is assigned to each subset.</p>
 <hr />
 <h4 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h4>
 <ul>
-<li>If <code>drop=False</code>, the <strong>first subset</strong> receives the <strong>lower amplitude range</strong>, and the <strong>second subset</strong> gets the <strong>higher amplitude range</strong>.</li>
-<li>If <code>drop=True</code>, the assignment is <strong>reversed</strong>.</li>
-<li>If <code>frequency_follows_amplitude=True</code>, <strong>frequency ranges are split along with amplitude</strong>.</li>
-<li>If <code>frequency_follows_amplitude=False</code>, both subsets retain the <strong>full frequency range</strong>.</li>
-<li>A <code>split_ratio</code> of <code>0.5</code> evenly distributes the parameter space between the two subsets.</li>
+<li>The number of splits is determined by the <strong>length of <code>split_ratios</code></strong> (e.g. <code>[0.3, 0.4, 0.3]</code> → 3 splits).</li>
+<li>If <code>drop=False</code>, the subsets are assigned from <strong>low → high amplitude</strong>.</li>
+<li>If <code>drop=True</code>, the subsets are assigned from <strong>high → low amplitude</strong>.</li>
+<li>If <code>frequency_follows_amplitude=True</code>, frequency ranges are <strong>split proportionally</strong> alongside amplitude.</li>
+<li>If <code>frequency_follows_amplitude=False</code>, <strong>all subsets receive the full frequency range</strong>.</li>
 </ul>
 <hr />
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>device_params</strong> (<code>dict</code>):<br />
-  Dictionary containing device parameter configurations.<br />
-  Each entry should include:</li>
-<li><code>'amplitude'</code>: Tuple <strong>(min, max)</strong> voltage levels.</li>
+  A dictionary of <strong>device configurations</strong>, where each key is a <strong>device name</strong> (e.g., <code>'Arduino Board'</code>) and each value is a dictionary with:</li>
+<li><code>'amplitude'</code>: Tuple <code>(min_amplitude, max_amplitude)</code>  </li>
 <li>
-<p><code>'frequency'</code>: Tuple <strong>(min, max)</strong> frequency range or a nested dictionary of frequency bands.</p>
+<p><code>'frequency'</code>:  </p>
+<ul>
+<li>Either a tuple <code>(min_frequency, max_frequency)</code>  </li>
+<li>Or a nested dictionary of frequency bands:
+  <div class="highlight"><pre><span></span><code><span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;band_1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">f_min1</span><span class="p">,</span> <span class="n">f_max1</span><span class="p">),</span>
+    <span class="s1">&#39;band_2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">f_min2</span><span class="p">,</span> <span class="n">f_max2</span><span class="p">),</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div></li>
+</ul>
 </li>
 <li>
-<p><strong>drop</strong> (<code>bool</code>, optional):  </p>
-</li>
-<li><code>False</code> → First dictionary gets <strong>lower amplitude range</strong>.  </li>
-<li>
-<p><code>True</code> → First dictionary gets <strong>upper amplitude range</strong>.<br />
+<p><strong>drop</strong> (<code>bool</code>, optional):<br />
+  If <code>True</code>, the first returned subset gets the <strong>upper part</strong> of the amplitude range.<br />
+  If <code>False</code>, the first subset gets the <strong>lower part</strong>.<br />
 <strong>Default:</strong> <code>False</code>.</p>
 </li>
 <li>
-<p><strong>frequency_follows_amplitude</strong> (<code>bool</code>, optional):  </p>
-</li>
-<li><code>True</code> → <strong>Frequency ranges split proportionally</strong> to amplitude.  </li>
-<li>
-<p><code>False</code> → Both subsets retain <strong>full frequency range</strong>.<br />
+<p><strong>frequency_follows_amplitude</strong> (<code>bool</code>, optional):<br />
+  If <code>True</code>, frequency ranges are split proportionally with amplitude.<br />
+  If <code>False</code>, each subset receives the <strong>entire frequency range</strong>.<br />
 <strong>Default:</strong> <code>True</code>.</p>
 </li>
 <li>
-<p><strong>split_ratio</strong> (<code>float</code>, optional):<br />
-  Fraction <strong>(0.0 to 1.0)</strong> defining how much of the range is assigned to the <strong>first subset</strong>.  </p>
+<p><strong>split_ratios</strong> (<code>list of float</code>):<br />
+  A list of ratios (e.g., <code>[0.3, 0.4, 0.3]</code>) that determine how to divide the amplitude and frequency ranges.<br />
+  Must sum to <strong>1.0</strong>.<br />
+<strong>Default:</strong> <code>[0.5, 0.5]</code></p>
 </li>
-<li><code>0.0</code> → All values go to the <strong>second subset</strong>.  </li>
-<li><code>1.0</code> → All values go to the <strong>first subset</strong>.<br />
-<strong>Default:</strong> <code>0.5</code>.</li>
 </ul>
 <hr />
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <ul>
-<li>
-<p><strong>lower_params</strong> (<code>dict</code>):<br />
-  Dictionary containing <strong>lower-range</strong> parameter configurations.</p>
-</li>
-<li>
-<p><strong>upper_params</strong> (<code>dict</code>):<br />
-  Dictionary containing <strong>upper-range</strong> parameter configurations.</p>
-</li>
+<li><strong>param_subsets</strong> (<code>list of dict</code>):<br />
+  A list of dictionaries containing parameter subsets.<br />
+  Each corresponds to one portion of the original range, based on <code>split_ratios</code>.</li>
 </ul>
 <hr />
 <h4 id="usage-example">Usage Example<a class="headerlink" href="#usage-example" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">SigVarGen.utils</span> <span class="k">as</span> <span class="nn">utils</span>
 
-<span class="c1"># Example device parameters</span>
+<span class="c1"># Device configuration</span>
 <span class="n">device_params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;Arduino Board&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;amplitude&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>  <span class="c1"># Voltage range</span>
-        <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">12e3</span><span class="p">)</span>  <span class="c1"># Hz</span>
+        <span class="s1">&#39;amplitude&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">12e3</span><span class="p">)</span>
     <span class="p">},</span>
     <span class="s1">&#39;Drones&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;amplitude&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1"># Voltage range</span>
+        <span class="s1">&#39;amplitude&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
         <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;control&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.398e9</span><span class="p">,</span> <span class="mf">2.402e9</span><span class="p">),</span>  <span class="c1"># Hz</span>
-            <span class="s1">&#39;telemetry_low&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">432e6</span><span class="p">,</span> <span class="mf">434e6</span><span class="p">),</span>  <span class="c1"># Hz</span>
-            <span class="s1">&#39;telemetry_high&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.39e9</span><span class="p">,</span> <span class="mf">5.9e9</span><span class="p">)</span>  <span class="c1"># Hz</span>
+            <span class="s1">&#39;control&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.398e9</span><span class="p">,</span> <span class="mf">2.402e9</span><span class="p">),</span>
+            <span class="s1">&#39;telemetry_low&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">432e6</span><span class="p">,</span> <span class="mf">434e6</span><span class="p">),</span>
+            <span class="s1">&#39;telemetry_high&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.39e9</span><span class="p">,</span> <span class="mf">5.9e9</span><span class="p">)</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="c1"># Generate parameter subsets with a 60/40 split and frequency following amplitude</span>
-<span class="n">lower_params</span><span class="p">,</span> <span class="n">upper_params</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">generate_device_parameters</span><span class="p">(</span>
-    <span class="n">device_params</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">split_ratio</span><span class="o">=</span><span class="mf">0.6</span>
+<span class="c1"># Split into 3 subsets: 30%, 40%, 30%</span>
+<span class="n">param_splits</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">generate_device_parameters_n_split</span><span class="p">(</span>
+    <span class="n">device_params</span><span class="p">,</span>
+    <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">frequency_follows_amplitude</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">split_ratios</span><span class="o">=</span><span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lower Parameter Set:&quot;</span><span class="p">,</span> <span class="n">lower_params</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Upper Parameter Set:&quot;</span><span class="p">,</span> <span class="n">upper_params</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">subset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param_splits</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subset </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">subset</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>

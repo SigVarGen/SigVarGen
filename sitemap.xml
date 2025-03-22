@@ -2,154 +2,154 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/config/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/contributing/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/getting_started/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/modules/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/noise/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/signal/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/utils/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/variations/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/config_examples/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/utils_helpers/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/noise/1generate_noise_power/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/noise/2add_colored_noise/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/noise/3envelopes/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/10add_interrupt_with_params/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/11add_interrupt_bursts/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/12generate_semi_periodic_signal/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/13add_periodic_interrupts/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/1generate_signal/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/2get_non_overlapping_interval/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/3place_interrupt/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/4blend_signal/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/5apply_interrupt_modifications/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/6generate_main_interrupt/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/7add_main_interrupt/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/8add_complexity_to_inter/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/signal/9add_smaller_interrupts/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/10transform_wave_with_score/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/11apply_quantization_noise/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/1generate_parameter_variations/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/2generate_variation/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/3apply_time_shift/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/4apply_time_warp/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/5apply_gain_variation/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/6apply_amplitude_modulation/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/7apply_amplitude_modulation_region/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/8apply_baseline_drift/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
     <url>
          <loc>https://sigvargen.github.io/SigVarGen/functions/variations/9regional_baseline_drifts/</loc>
-         <lastmod>2025-03-18</lastmod>
+         <lastmod>2025-03-22</lastmod>
     </url>
 </urlset>

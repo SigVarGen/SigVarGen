@@ -1023,17 +1023,26 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="add_colored_noise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#description" class="md-nav__link">
     <span class="md-ellipsis">
       Description
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Description">
-      <ul class="md-nav__list">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✨ New Features
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#notes" class="md-nav__link">
@@ -1063,9 +1072,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#usage-example" class="md-nav__link">
+  <a href="#example-usage" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage Example
+      Example Usage
     </span>
   </a>
   
@@ -1670,96 +1679,131 @@
 
   <h1>add_colored_noise</h1>
 
+<p>Absolutely! Here's the <strong>expanded and fully updated documentation</strong> for <code>add_colored_noise</code>, now including the <strong>new features</strong> like:</p>
+<ul>
+<li><code>fs</code> (sampling rate) for realistic frequency scaling  </li>
+<li>Support for <strong>additional noise colors</strong> (<code>blue</code>, <code>violet</code>)  </li>
+<li>Support for <strong>custom spectral filters (callables)</strong>  </li>
+<li><strong>Return of isolated noise</strong> for analysis  </li>
+<li><strong>Time-varying envelopes</strong></li>
+</ul>
+<hr />
 <h2 id="add_colored_noise"><code>add_colored_noise</code><a class="headerlink" href="#add_colored_noise" title="Permanent link">&para;</a></h2>
 <p><strong>Location:</strong> <code>noise/noise_addition.py</code></p>
 <hr />
-<h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h2>
-<p><code>add_colored_noise</code> introduces noise (white, pink, or brown) into a signal, simulating realistic noisy environments. This function applies frequency-domain filtering to generate colored noise with specific spectral properties and then scales it to a defined noise power level.</p>
-<p>Additionally, an optional modulation envelope can be applied, introducing time-dependent amplitude variations that mimic real-world non-stationary noise patterns. This makes the function valuable for signal augmentation, testing noise-robust algorithms, and creating realistic simulations of environmental interference.</p>
+<h3 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h3>
+<p><code>add_colored_noise</code> introduces <strong>colored noise</strong> into a signal using frequency-domain filtering techniques. It simulates real-world interference by allowing users to define <strong>spectral characteristics</strong>, <strong>noise intensity</strong>, and <strong>modulation envelopes</strong> for <strong>non-stationary noise</strong>.</p>
+<p>This function is especially useful for:
+- Creating <strong>realistic signal variations</strong>
+- <strong>Stress-testing</strong> algorithms under different noise conditions
+- <strong>Signal augmentation</strong> for machine learning and data-driven modeling</p>
+<hr />
+<h3 id="new-features">✨ New Features<a class="headerlink" href="#new-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>fs</code> (sampling rate)</strong> parameter ensures accurate spectral shaping</li>
+<li>Supports <strong>blue</strong> and <strong>violet</strong> noise profiles</li>
+<li>Accepts <strong>custom frequency-domain filters</strong> as callables</li>
+<li>Returns <strong>isolated noise component</strong> for separate inspection</li>
+<li>Applies <strong>modulation envelope</strong> to simulate time-varying noise</li>
+</ul>
 <hr />
 <h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>White noise</strong> has a flat power spectrum across all frequencies.</li>
-<li><strong>Pink noise</strong> follows a <span class="arithmatex">\(1/f\)</span> spectral decay, often found in natural and biological systems.</li>
-<li><strong>Brown noise</strong> follows a <span class="arithmatex">\(1/f^2\)</span> spectral decay, emphasizing lower frequencies.</li>
-<li>The noise power is adjusted relative to the input signal using a <strong>specified SNR range</strong>.</li>
-<li>Applying a <strong>modulation envelope</strong> allows for non-stationary noise characteristics.</li>
+<li><strong>White noise</strong> → flat power across all frequencies  </li>
+<li><strong>Pink noise</strong> → power ∝ 1/f (natural, biological systems)  </li>
+<li><strong>Brown noise</strong> → power ∝ 1/f² (emphasizes low frequencies)  </li>
+<li><strong>Blue noise</strong> → power ∝ f (emphasizes high frequencies)  </li>
+<li><strong>Violet noise</strong> → power ∝ f² (extreme high-frequency boost)  </li>
+<li><strong>Custom filters</strong> can target specific frequency patterns (e.g., harmonic peaks)</li>
 </ul>
 <hr />
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
-<p><strong>wave</strong> (<code>numpy.ndarray</code>):<br />
-  The original signal to which noise will be added.</p>
+<p><strong>wave</strong> (<code>np.ndarray</code>):<br />
+  The input signal to which noise will be added.</p>
+</li>
+<li>
+<p><strong>fs</strong> (<code>float</code>):<br />
+  Sampling rate in Hz. Used to compute correct frequency bins for spectral shaping.</p>
 </li>
 <li>
 <p><strong>noise_power</strong> (<code>float</code>):<br />
-  The base noise power level, determining the variance of the added noise.</p>
+  Base noise power (variance). Determines energy of the added noise.</p>
 </li>
 <li>
-<p><strong>npw</strong> (<code>tuple</code> of <code>float</code>):<br />
-  A range (<code>min</code>, <code>max</code>) defining noise power variation, allowing randomness in noise intensity between different measurements.</p>
+<p><strong>npw</strong> (<code>tuple(float, float)</code>):<br />
+  Range multiplier for noise power. Adds variability in intensity.<br />
+  Example: <code>(0.8, 1.2)</code> allows ±20% fluctuation.</p>
 </li>
 <li>
-<p><strong>mf</strong> (<code>tuple</code> of <code>float</code>):<br />
-  A range (<code>min</code>, <code>max</code>) defining the modulation factor variation, slightly altering the signal amplitude between different measurements.</p>
+<p><strong>mf</strong> (<code>tuple(float, float)</code>):<br />
+  Range for amplitude modulation applied to the entire signal.<br />
+  Simulates slight scaling due to environmental or hardware changes.</p>
 </li>
 <li>
-<p><strong>color</strong> (<code>str</code>, optional):<br />
-  Type of noise to add:  </p>
+<p><strong>color</strong> (<code>str</code> or <code>callable</code>, optional):<br />
+  Defines the spectral profile of the noise. Options:</p>
 </li>
-<li><code>'white'</code> → Equal power at all frequencies.  </li>
-<li><code>'pink'</code> → Power decays as <span class="arithmatex">\(1/f\)</span>, common in speech and natural signals.  </li>
+<li><code>'white'</code> → flat spectrum</li>
+<li><code>'pink'</code> → 1/f</li>
+<li><code>'brown'</code> → 1/f²</li>
+<li><code>'blue'</code> → f</li>
+<li><code>'violet'</code> → f²  </li>
 <li>
-<p><code>'brown'</code> → Power decays as <span class="arithmatex">\(1/f^2\)</span>, emphasizing low frequencies.<br />
-<strong>Default:</strong> <code>'pink'</code>.</p>
+<p><strong>Callable</strong> → custom function <code>filter(freqs)</code> that returns a frequency-domain mask<br />
+    (e.g., harmonic peaks or band-limited filters)</p>
 </li>
 <li>
 <p><strong>mod_envelope</strong> (<code>dict</code>, optional):<br />
-  Dictionary specifying a time-varying amplitude envelope for non-stationary noise:  </p>
+  Modulates the <strong>noise amplitude over time</strong> (non-stationary noise). Should include:</p>
 </li>
-<li><code>'func'</code>: The envelope function.  </li>
-<li><code>'param'</code>: Range of parameters for the envelope function.<br />
-    If <code>None</code>, noise remains stationary. <strong>Default:</strong> <code>None</code>.
-    Parameter examples provided in <code>config.py</code>.</li>
+<li><code>'func'</code>: an envelope function like <code>envelope_sine</code>, <code>envelope_random_walk</code>, etc.</li>
+<li><code>'param'</code>: parameter(s) passed to the envelope function (usually a range)<br />
+  Example: <code>{'func': envelope_sine, 'param': [0.01, 0.015]}</code>. More parameter examples provided in config.py.</li>
+<li>If <code>None</code>, noise remains stationary. Default: <code>None</code>. </li>
 </ul>
 <hr />
 <h3 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
-<p><strong>res</strong> (<code>numpy.ndarray</code>):<br />
-  The input signal with added colored noise.</p>
+<p><strong>res</strong> (<code>np.ndarray</code>):<br />
+  Final signal with colored, possibly modulated noise added.</p>
 </li>
 <li>
-<p><strong>noise</strong> (<code>numpy.ndarray</code>):<br />
-  The isolated noise component, useful for separate analysis or denoising techniques.</p>
+<p><strong>noise</strong> (<code>np.ndarray</code>):<br />
+  The noise component alone (useful for plotting, denoising tests, etc.)</p>
 </li>
 </ul>
 <hr />
-<h3 id="usage-example">Usage Example<a class="headerlink" href="#usage-example" title="Permanent link">&para;</a></h3>
+<h3 id="example-usage">Example Usage<a class="headerlink" href="#example-usage" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">SigVarGen</span> <span class="k">as</span> <span class="nn">svg</span>
 
-<span class="c1"># Generate a clean sine wave</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="c1"># Create a clean sine wave</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Hz</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">clean_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
 
-<span class="c1"># Define noise parameters</span>
+<span class="c1"># Define parameters</span>
 <span class="n">noise_power</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">npw_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
-<span class="n">mf_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> 
+<span class="n">npw_range</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+<span class="n">mf_range</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<span class="c1"># Add pink noise with a sine modulation envelope</span>
+<span class="c1"># Add blue noise with sine-modulated envelope</span>
 <span class="n">noisy_signal</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">svg</span><span class="o">.</span><span class="n">add_colored_noise</span><span class="p">(</span>
     <span class="n">wave</span><span class="o">=</span><span class="n">clean_signal</span><span class="p">,</span>
+    <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
     <span class="n">noise_power</span><span class="o">=</span><span class="n">noise_power</span><span class="p">,</span>
     <span class="n">npw</span><span class="o">=</span><span class="n">npw_range</span><span class="p">,</span>
     <span class="n">mf</span><span class="o">=</span><span class="n">mf_range</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;pink&quot;</span><span class="p">,</span>
-    <span class="n">mod_envelope</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="n">svg</span><span class="o">.</span><span class="n">envelope_sine</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.015</span><span class="p">]}</span> 
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+    <span class="n">mod_envelope</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;func&#39;</span><span class="p">:</span> <span class="n">svg</span><span class="o">.</span><span class="n">envelope_sine</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">]}</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Noisy Signal Shape:&quot;</span><span class="p">,</span> <span class="n">noisy_signal</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="c1"># Optional: plot or analyze the noise separately</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Noisy Signal:&quot;</span><span class="p">,</span> <span class="n">noisy_signal</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Isolated Noise:&quot;</span><span class="p">,</span> <span class="n">noise</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
 </code></pre></div>
 
 
