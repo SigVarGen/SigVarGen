@@ -86,7 +86,7 @@ def place_interrupt(signal_length, duration_ratio, occupied_intervals, non_overl
     if interval is None:
         return None, None  
 
-    print(interval)
+    #print(interval)
     return interval
 
 def blend_signal(base_slice, interrupt_slice, blend=0.5):
@@ -655,6 +655,7 @@ def add_smaller_interrupts(
 
 def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_RANGES, 
                             temp, drop=True, disperse=True, duration_ratio=None, n_smaller_interrupts=None, 
+                            small_duration_ratio=None,
                             n_sinusoids=None, non_overlap=True, complex_iter=0, blend_factor=0.5, 
                             shrink_complex=False, shrink_factor=0.9, buffer=1):
     """
@@ -680,6 +681,8 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
         Ratio of signal length to allocate for main interrupt (default: Random from 0.06 to 0.12).
     n_smaller_interrupts : int, optional
         Number of smaller interrupts to add (default: Random 0 to 2).
+    small_duration_ratio : float, optional
+        Ratio of signal length to allocate for smaller interrupts (default: Random from 0.01 to 0.9 of duration_ratio).
     n_sinusoids : int, optional
         Number of sinusoids to sum. If None, randomly chosen (2-10).
     non_overlap : bool, optional
@@ -733,7 +736,8 @@ def add_interrupt_with_params(t, base_signal, domain, DEVICE_RANGES, INTERRUPT_R
     if n_smaller_interrupts is None:
         n_smaller_interrupts = random.randint(0, 2)
 
-    small_duration_ratio = random.uniform(0.01*duration_ratio, 0.9*duration_ratio)
+    if small_duration_ratio is None:
+        small_duration_ratio = random.uniform(0.01*duration_ratio, 0.9*duration_ratio)
 
     base_signal, small_interrupt_params = add_smaller_interrupts(
                t=t,

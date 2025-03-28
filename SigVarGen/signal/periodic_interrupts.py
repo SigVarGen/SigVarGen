@@ -112,17 +112,17 @@ def add_periodic_interrupts(base_signal, amplitude_range, inter_sig, start_idx, 
 
     dig_sig2 = generate_semi_periodic_signal(length=length, base_pattern=base_pattern_2, flip_probability=flip_probability_2)
 
-    offset1 = (offset/1.3)*dig_sig1
+    #offset1 = (offset/1.3)*dig_sig1
     interrupts = (inter_sig.copy() * dig_sig1)
 
-    base_signal[:start_idx] = base_signal[:start_idx] + interrupts[:start_idx]
-    base_signal[start_idx+duration_idx:] = base_signal[start_idx+duration_idx:] + interrupts[start_idx+duration_idx:]
+    base_signal[:start_idx] = 0.5*base_signal[:start_idx] + 0.5*interrupts[:start_idx]
+    base_signal[start_idx+duration_idx:] = 0.5*base_signal[start_idx+duration_idx:] + 0.5*interrupts[start_idx+duration_idx:]
 
-    rand1 = random.uniform(offset/1.6, offset/1.85)
-    offset2 = (rand1)*dig_sig2
+    #rand1 = random.uniform(offset/1.6, offset/1.85)
+    #offset2 = (rand1)*dig_sig2
     interrupts = (inter_sig.copy() * dig_sig2)
 
-    base_signal[start_idx:start_idx+duration_idx] = base_signal[start_idx:start_idx+duration_idx] + interrupts[start_idx:start_idx+duration_idx]
+    base_signal[start_idx:start_idx+duration_idx] = 0.5*base_signal[start_idx:start_idx+duration_idx] + 0.5*interrupts[start_idx:start_idx+duration_idx]
 
     base_signal = np.clip(base_signal, amplitude_range[0], amplitude_range[1])
 

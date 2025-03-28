@@ -28,7 +28,10 @@
   - If `None`, a random value between `0.06` and `0.12` is chosen.  
 - **n_smaller_interrupts** (`int`, optional):  
   - The number of smaller interrupts to add.  
-  - If `None`, a random value between `0` and `2` is chosen.  
+  - If `None`, a random value between `0` and `2` is chosen.
+- **small_duration_ratio** (`float`, optional):  
+  - The fraction of total signal length occupied by small interrupt.  
+  - If `None`, a random value between `0.01` to `0.9` of `duration_ratio` is chosen.  
 - **n_sinusoids** (`int`, optional):  
   - The number of sinusoidal components in each interrupt.  
   - If `None`, a random number between `2` and `10` is chosen.  
@@ -106,6 +109,7 @@ updated_signal, params = svg.add_interrupt_with_params(
     disperse=True,
     duration_ratio=0.08,
     n_smaller_interrupts=2,
+    small_duration_ratio=0.07,
     complex_iter=1,
     blend_factor=0.6,
     shrink_complex=True,

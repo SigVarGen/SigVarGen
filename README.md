@@ -11,7 +11,7 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 - **Functions Overview**: [Modules](https://sigvargen.github.io/SigVarGen/modules/)
 - **Tutorials**: [Tutorials](./tutorials)
 - **Dataset Examples**: [Datasets](./datasets)
-- **Contributing**: [Contributing Guidelines](./doc/contributing.md)
+- **Contributing**: [Contributing Guidelines](./docs/contributing.md)
 - **Bug reports**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)
 
 
@@ -87,7 +87,7 @@ We welcome contributions from the community! If you wish to contribute to SigVar
 - Create a new branch for your feature or bugfix.
 - Submit a pull request with detailed information about your changes.
 
-For more information, please refer to our [Contributing Guidelines](./doc/contributing.md).
+For more information, please refer to our [Contributing Guidelines](./docs/contributing.md).
 
 ---
 
