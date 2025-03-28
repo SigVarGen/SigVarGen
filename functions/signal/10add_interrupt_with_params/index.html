@@ -1686,7 +1686,10 @@
 <li>If <code>None</code>, a random value between <code>0.06</code> and <code>0.12</code> is chosen.  </li>
 <li><strong>n_smaller_interrupts</strong> (<code>int</code>, optional):  </li>
 <li>The number of smaller interrupts to add.  </li>
-<li>If <code>None</code>, a random value between <code>0</code> and <code>2</code> is chosen.  </li>
+<li>If <code>None</code>, a random value between <code>0</code> and <code>2</code> is chosen.</li>
+<li><strong>small_duration_ratio</strong> (<code>float</code>, optional):  </li>
+<li>The fraction of total signal length occupied by small interrupt.  </li>
+<li>If <code>None</code>, a random value between <code>0.01</code> to <code>0.9</code> of <code>duration_ratio</code> is chosen.  </li>
 <li><strong>n_sinusoids</strong> (<code>int</code>, optional):  </li>
 <li>The number of sinusoidal components in each interrupt.  </li>
 <li>If <code>None</code>, a random number between <code>2</code> and <code>10</code> is chosen.  </li>
@@ -1762,6 +1765,7 @@
     <span class="n">disperse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">duration_ratio</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span>
     <span class="n">n_smaller_interrupts</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">small_duration_ratio</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span>
     <span class="n">complex_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">blend_factor</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
     <span class="n">shrink_complex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
