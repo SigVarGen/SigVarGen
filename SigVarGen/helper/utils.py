@@ -1,25 +1,43 @@
 import numpy as np
-from scipy.interpolate import interp1d
 
 def calculate_SNR(signal, noisy_signal):
+    """
+    Calculates the Signal-to-Noise Ratio (SNR) between a clean signal and its noisy version.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        The original clean signal.
+    noisy_signal : np.ndarray
+        The noisy version of the signal.
+
+    Returns
+    -------
+    float
+        The Signal-to-Noise Ratio (SNR) in decibels (dB).
+    """
     noise = noisy_signal - signal
     signal_power = np.abs(np.mean(signal ** 2))
     noise_power = np.abs(np.mean(noise ** 2))
     return 10 * np.log10(signal_power / noise_power)
 
 def calculate_ED(X, Y):
+    """
+    Calculates the Euclidean Distance (L2 norm) between two signals.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        The first input array.
+    Y : np.ndarray
+        The second input array.
+
+    Returns
+    -------
+    float
+        The Euclidean distance between X and Y.
+    """
     return np.linalg.norm(X - Y)
-
-def interpoling(res, target_len=10000):
-    target_indices = np.linspace(0, 1, target_len)
-    original_indices = np.linspace(0, 1, len(res))
-    interpolator = interp1d(original_indices, res, kind='linear')
-    res1_i = interpolator(target_indices)
-    return res1_i
-
-def normalization(signal1):
-    signal1_norm = (signal1 - np.mean(signal1)) / np.std(signal1)
-    return signal1_norm
 
 def generate_device_parameters(device_params, drop=False, frequency_follows_amplitude=True, split_ratios=[0.5, 0.5]):
     """

@@ -3,7 +3,7 @@ from .signal import *
 from .variations import *
 
 from .config import *
-from .utils import *
+from .helper import *
 
 #__version__ = 1.0.0
 
@@ -23,5 +23,5 @@ __all__ = ['noise', 'signal', 'variations',
             'apply_nonlinear_distortion', 'apply_quantization_noise',
             'EMBEDDED_DEVICE_RANGES', 'EMBEDDED_DEVICE_INTERRUPTS', 'param_sweeps',
             'noise_funcs', 'npw_levels', 'mf_levels',
-            'calculate_SNR', 'calculate_ED', 'interpoling', 'normalization',
-            'generate_device_parameters']
+            'interpoling', 'normalization', 'randomize_trace',
+            'calculate_SNR', 'calculate_ED', 'generate_device_parameters']

@@ -1,6 +1,6 @@
 import numpy as np
 
-from SigVarGen.utils import interpoling
+from SigVarGen.helper import interpoling
 
 def generate_signal(t, n_sinusoids, amplitude_range, frequency_range, amp_md_min=0.05, amp_md_max=0.95):
     
