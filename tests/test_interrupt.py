@@ -542,7 +542,10 @@ def test_add_interrupt_with_params_long_response(sample_time_vector, sample_devi
     )
 
     assert modified_signal.shape == base_signal.shape, "Signal length should remain unchanged"
-    assert len(interrupt_params) == 1, "Only one interrupt should be added"
+    assert len(interrupt_params) == 1, "One interrupt should be added"
+    # do we actually want to reject it or accept?
+    #assert len(interrupt_params) == 0, "No interrupt should be added when duration exceeds signal"
+
 
 # -------------------------------------
 # --- Tests for add_interrupt_bursts ---

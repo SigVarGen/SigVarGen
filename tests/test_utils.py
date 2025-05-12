@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from SigVarGen.utils import generate_device_parameters, calculate_ED, calculate_SNR, interpoling, normalization
+from SigVarGen.helper import generate_device_parameters, calculate_ED, calculate_SNR, interpoling, normalization
 
 def test_basic_split(sample_device_params):
     lower, upper = generate_device_parameters(sample_device_params, drop=False, split_ratios=[0.5,0.5])
@@ -65,9 +65,6 @@ def test_euclidean_distance():
     result = calculate_ED(x, y)
     assert result == pytest.approx(5.196, rel=1e-3)
 
-import numpy as np
-import pytest
-from SigVarGen.utils import calculate_SNR, interpoling, normalization
 
 def test_calculate_SNR():
     signal = np.ones(100)
