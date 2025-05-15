@@ -85,7 +85,43 @@ normalized_signal = normalization(raw_signal)
 
 ---
 
-Here's the **updated documentation** for your new generalized version of `generate_device_parameters_n_split`, which supports splitting into **N subsets** (not just two), while keeping all your original intent and style:
+### `randomize_trace`
+
+Randomizes a trace by optionally **shifting its mean** and/or **rescaling its variance** using specified sampling parameters.
+
+**Parameters:**
+
+* `trace` (`numpy.ndarray`): Input 1D time series signal.
+* `adjust_mean` (`bool`, default=`True`): Whether to adjust the mean of the trace.
+* `mean_min` (`float`, optional): Lower bound for the sampled target mean.
+* `mean_max` (`float`, optional): Upper bound for the sampled target mean.
+* `mean_std` (`float`, optional): Standard deviation for sampling the target mean around the center of `mean_min` and `mean_max`.
+* `adjust_var` (`bool`, default=`False`): Whether to adjust the variance of the trace.
+* `var_mean` (`float`, optional): Mean for sampling the target variance.
+* `var_min` (`float`, optional): Lower bound for the sampled target variance.
+* `var_max` (`float`, optional): Upper bound for the sampled target variance.
+* `var_std` (`float`, optional): Standard deviation for sampling the target variance around `var_mean`.
+
+**Returns:**
+
+* `numpy.ndarray`: Signal with randomized mean and/or variance.
+
+**Example:**
+
+```python
+randomized_signal = randomize_trace(
+    trace=raw_signal,
+    adjust_mean=True,
+    mean_min=-1.0,
+    mean_max=1.0,
+    mean_std=0.2,
+    adjust_var=True,
+    var_mean=1.0,
+    var_min=0.5,
+    var_max=1.5,
+    var_std=0.1
+)
+```
 
 ---
 

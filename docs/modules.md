@@ -6,7 +6,7 @@ The SigVarGen framework is modular, promoting clarity, maintainability, and scal
 - **[Noise](noise.md)**: Noise generation, modeling and addition.
 - **[Variations](variations.md)**: Augmentation techniques such as baseline drift, time warping, and modulation.
 - **[Configuration](config.md)**: Parameter examples for signal generation, noise modelling and chained augmentation.
-- **[Utils](utils.md)**: Auxiliary functions for signal normalization, metric calculation, and device parameter generation.
+- **[Helper](utils.md)**: Auxiliary functions for signal processing, metric calculation, and device parameter generation.
 
 ---
 
@@ -79,6 +79,7 @@ The **utils module** contains **general-purpose signal processing functions** us
 | | `calculate_ED` | Computes the Euclidean distance (ED) between two signals. |
 | **Low-Level (Signal Processing & Normalization)** | `interpoling` | Interpolates a signal to a target length, ensuring uniform sampling across signals. |
 | | `normalization` | Standardizes a signal by centering it at zero mean and unit variance. |
+| | `randomize_trace` | Randomizes a signal by optionally rescaling its variance and/or shifting its mean. |
 
 ---
 

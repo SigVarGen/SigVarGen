@@ -4,7 +4,7 @@ The **Noise Module** provides methods for generating and adding noise to signals
 
 The module supports **stationary** and **non-stationary** noise models, including:
 
-- **Colored noise synthesis** (white, pink, and brown).
+- **Colored noise synthesis** (white, pink, brown, blue, violet, and custom profile).
 - **Time-varying noise envelopes** (linear, sinusoidal, random walk, and blockwise modulation).
 - **Controlled noise injection** using signal-to-noise ratio (SNR) scaling.
 
