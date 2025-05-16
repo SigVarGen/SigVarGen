@@ -5,12 +5,12 @@
 [![PyPI version](https://img.shields.io/pypi/v/SigVarGen.svg)](https://pypi.org/project/SigVarGen/)
 
 
-SigVarGen is a Python framework designed to create **multiple variants** of a base **1D signal** under the same environmental conditions. It allows the simulation of both **idle-state signals** and signals affected by **external perturbations**, enabling robust testing of algorithms in dynamic environments based on multiple measurements of the same event. Framework is suitable for **time-series analysis**, **signal processing**, and **synthetic data generation** in various domains such as sensor data modeling, embedded systems testing, and machine learning.
+SigVarGen is a Python framework designed to create **multiple variants** of a base **1D signal** under the same environmental conditions. It allows the simulation of both **idle-state signals** and signals perturbed by **event-driven and asynchronous interrupts**, enabling robust testing of algorithms in dynamic environments based on multiple measurements of the same event. Framework is suitable for **time-series analysis**, **signal processing**, and **synthetic data generation** for side-channel-based hardware fuzzing.
 
 - **Documentation**: [Documentation Site](https://sigvargen.github.io/SigVarGen/)
 - **Functions Overview**: [Modules](https://sigvargen.github.io/SigVarGen/modules/)
 - **Tutorials**: [Tutorials](./tutorials)
-- **Dataset Examples**: [Datasets](./datasets)
+- **Dataset Examples**: [Main Dataset](https://www.kaggle.com/datasets/gelendwagen/synthetic-side-channel-signals), [Small Datasets](./datasets)
 - **Contributing**: [Contributing Guidelines](./docs/contributing.md)
 - **Bug reports**: [Issues](https://github.com/SigVarGen/SigVarGen/issues)
 
@@ -21,7 +21,7 @@ SigVarGen is a Python framework designed to create **multiple variants** of a ba
 
 - **Signal Generation**: Synthesizes complex 1D signals by combining multiple sinusoidal components, providing realistic baseline idle signals.
 - **Interrupting Signal Generation, Scheduling and Addition**: Synthesizes interrupting 1D signal and blend into original signal, mimicking real-world anomalies such as sensor glitches, external perturbations, or event-driven variations.
-- **Variation and Augmentation**: Generates diverse signal variants by systematically altering signal parameters and applying a range of transformations, such as time shifting, warping, gain variation, amplitude modulation, and baseline drift.
+- **Variation and Augmentation**: Generates diverse signal variants by systematically altering signal parameters and applying a range of transformations, such as crosstalk, time shifting, warping, gain variation, amplitude modulation, and baseline drift.
 - **Noise Generation and Addition**: Supports the addition of various types of noise (e.g., white / colored, and stationary / non-stationary noise) to the generated signals, mimicking real-world interference.
 
 ---
