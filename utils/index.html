@@ -1567,6 +1567,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#randomize_trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      randomize_trace
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#generate_device_parameters_n_split" class="md-nav__link">
     <span class="md-ellipsis">
       generate_device_parameters_n_split
@@ -1795,7 +1804,39 @@
 <div class="highlight"><pre><span></span><code><span class="n">normalized_signal</span> <span class="o">=</span> <span class="n">normalization</span><span class="p">(</span><span class="n">raw_signal</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
-<p>Here's the <strong>updated documentation</strong> for your new generalized version of <code>generate_device_parameters_n_split</code>, which supports splitting into <strong>N subsets</strong> (not just two), while keeping all your original intent and style:</p>
+<h3 id="randomize_trace"><code>randomize_trace</code><a class="headerlink" href="#randomize_trace" title="Permanent link">&para;</a></h3>
+<p>Randomizes a trace by optionally <strong>shifting its mean</strong> and/or <strong>rescaling its variance</strong> using specified sampling parameters.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>trace</code> (<code>numpy.ndarray</code>): Input 1D time series signal.</li>
+<li><code>adjust_mean</code> (<code>bool</code>, default=<code>True</code>): Whether to adjust the mean of the trace.</li>
+<li><code>mean_min</code> (<code>float</code>, optional): Lower bound for the sampled target mean.</li>
+<li><code>mean_max</code> (<code>float</code>, optional): Upper bound for the sampled target mean.</li>
+<li><code>mean_std</code> (<code>float</code>, optional): Standard deviation for sampling the target mean around the center of <code>mean_min</code> and <code>mean_max</code>.</li>
+<li><code>adjust_var</code> (<code>bool</code>, default=<code>False</code>): Whether to adjust the variance of the trace.</li>
+<li><code>var_mean</code> (<code>float</code>, optional): Mean for sampling the target variance.</li>
+<li><code>var_min</code> (<code>float</code>, optional): Lower bound for the sampled target variance.</li>
+<li><code>var_max</code> (<code>float</code>, optional): Upper bound for the sampled target variance.</li>
+<li><code>var_std</code> (<code>float</code>, optional): Standard deviation for sampling the target variance around <code>var_mean</code>.</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>numpy.ndarray</code>: Signal with randomized mean and/or variance.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="n">randomized_signal</span> <span class="o">=</span> <span class="n">randomize_trace</span><span class="p">(</span>
+    <span class="n">trace</span><span class="o">=</span><span class="n">raw_signal</span><span class="p">,</span>
+    <span class="n">adjust_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">mean_min</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">mean_max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">mean_std</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">adjust_var</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">var_mean</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">var_min</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">var_max</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="n">var_std</span><span class="o">=</span><span class="mf">0.1</span>
+<span class="p">)</span>
+</code></pre></div>
 <hr />
 <h3 id="generate_device_parameters_n_split"><code>generate_device_parameters_n_split</code><a class="headerlink" href="#generate_device_parameters_n_split" title="Permanent link">&para;</a></h3>
 <p><code>generate_device_parameters_n_split</code> splits the <strong>amplitude and frequency ranges</strong> of device configurations into <strong>multiple distinct subsets</strong>. This helps to generate distinct spaces for idle and interrupting signals.</p>

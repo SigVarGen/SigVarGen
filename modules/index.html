@@ -1662,7 +1662,7 @@
 <li><strong><a href="../noise/">Noise</a></strong>: Noise generation, modeling and addition.</li>
 <li><strong><a href="../variations/">Variations</a></strong>: Augmentation techniques such as baseline drift, time warping, and modulation.</li>
 <li><strong><a href="../config/">Configuration</a></strong>: Parameter examples for signal generation, noise modelling and chained augmentation.</li>
-<li><strong><a href="../utils/">Utils</a></strong>: Auxiliary functions for signal normalization, metric calculation, and device parameter generation.</li>
+<li><strong><a href="../utils/">Helper</a></strong>: Auxiliary functions for signal processing, metric calculation, and device parameter generation.</li>
 </ul>
 <hr />
 <h2 id="signal-module-functions-hierarchy-overview"><strong>Signal Module Functions Hierarchy Overview</strong><a class="headerlink" href="#signal-module-functions-hierarchy-overview" title="Permanent link">&para;</a></h2>
@@ -1906,6 +1906,11 @@
 <td></td>
 <td><code>normalization</code></td>
 <td>Standardizes a signal by centering it at zero mean and unit variance.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>randomize_trace</code></td>
+<td>Randomizes a signal by optionally rescaling its variance and/or shifting its mean.</td>
 </tr>
 </tbody>
 </table>
